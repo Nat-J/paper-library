@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="本地文献知识库：中文交互导读、论文原文与来源记录。">
+  <title>文献｜我的论文导读库</title>
+  <style>
+    :root { color-scheme: light; --bg: #f3f6f2; --paper: #fffefb; --ink: #233b30; --muted: #617267; --line: #d8e1d7; --green: #285641; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.85 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    main { max-width: 1120px; margin: auto; padding: 0 32px 64px; }
+    .masthead { display: flex; justify-content: space-between; gap: 16px; padding: 26px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; letter-spacing: 2px; }
+    .intro { padding: 58px 0 38px; }
+    .eyebrow { font-size: 12px; color: var(--muted); letter-spacing: 2px; }
+    h1 { margin: 12px 0 18px; font: 56px/1.25 Georgia, "Songti SC", serif; letter-spacing: -2px; }
+    .intro p { margin: 0; color: var(--muted); max-width: 45em; }
+    .section-head { display: flex; align-items: baseline; justify-content: space-between; border-top: 1px solid var(--line); padding: 22px 0; }
+    h2 { font-size: 15px; margin: 0; }
+    .section-head span { color: var(--muted); font-size: 12px; }
+    .paper { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 32px; padding: 32px; background: var(--paper); border: 1px solid var(--line); border-top: 3px solid var(--green); border-radius: 14px; }
+    .paper-mark { font: 76px/1.2 Georgia, serif; color: var(--green); letter-spacing: -3px; }
+    .year { color: var(--muted); font-size: 12px; margin-top: 8px; letter-spacing: 1px; }
+    h3 { margin: 0 0 8px; font-size: 24px; line-height: 1.5; }
+    .original-title { color: var(--muted); font-size: 13px; margin: 0 0 16px; overflow-wrap: anywhere; }
+    .summary { margin: 0 0 18px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+    .tag { font-size: 11px; color: var(--muted); padding: 2px 9px; border: 1px solid var(--line); border-radius: 4px; }
+    .links { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+    a { color: var(--green); text-underline-offset: 4px; }
+    a:focus-visible { outline: 3px solid #a77c42; outline-offset: 5px; }
+    .primary { display: inline-block; padding: 8px 18px; background: var(--green); color: var(--paper); text-decoration: none; border-radius: 5px; font-size: 14px; }
+    .links > a:not(.primary) { font-size: 13px; }
+    footer { margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+    footer p { margin: 0 0 8px; }
+    @media (max-width: 600px) {
+      main { padding: 0 20px 40px; }
+      .masthead { font-size: 10px; letter-spacing: 1px; }
+      .intro { padding: 38px 0 28px; }
+      h1 { font-size: 44px; }
+      .paper { grid-template-columns: 1fr; gap: 18px; padding: 24px; }
+      .paper-mark { font-size: 60px; }
+      .year { margin-top: 0; }
+      h3 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="masthead"><span>文稿 / 文献</span><span>LOCAL PAPER LIBRARY</span></header>
+    <div class="intro">
+      <div class="eyebrow">从论文，到可以反复回看的理解</div>
+      <h1>我的文献导读库</h1>
+      <p>读过的论文留在这里。打开导读，重新走一遍方法；回到原文，核对每一个关键细节。</p>
+    </div>
+    <section aria-labelledby="library-heading">
+      <div class="section-head"><h2 id="library-heading">已归档文献</h2><span>01 篇</span></div>
+      <!-- 维护目录时在此添加或更新论文条目，保留其他条目。 -->
+      <article class="paper" id="paper-pi0">
+        <div><div class="paper-mark" aria-hidden="true">π0</div><div class="year">2024 · Physical Intelligence</div></div>
+        <div>
+          <h3>π0：从看懂到行动</h3>
+          <p class="original-title" lang="en">A Vision-Language-Action Flow Model for General Robot Control</p>
+          <p class="summary">把预训练视觉语言模型与 Flow Matching 动作专家连接起来，用多机器人数据学习连续控制。沿着输入、动作生成、训练与执行，理解模型如何让机器人动起来。</p>
+          <div class="tags"><span class="tag">视觉语言动作模型</span><span class="tag">Flow Matching</span><span class="tag">机器人学习</span></div>
+          <nav class="links" aria-label="π0 阅读入口">
+            <a class="primary" href="2024-pi0/index.html">打开中文导读 →</a>
+            <a href="2024-pi0/assets/paper.pdf">论文 PDF ↗</a>
+            <a href="2024-pi0/SOURCES.md">来源与核对记录</a>
+          </nav>
+        </div>
+      </article>
+    </section>
+    <footer>
+      <p>下次阅读：Finder → 文稿 → 文献 → 双击 index.html。也可以进入论文文件夹，直接打开其中的 index.html。</p>
+      <p>导读、原文与媒体保存在各自文件夹内。备份时复制整个“文献”文件夹即可。</p>
+    </footer>
+  </main>
+</body>
+</html>

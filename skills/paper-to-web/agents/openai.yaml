@@ -1,0 +1,4 @@
+interface:
+  display_name: "论文交互导读网页"
+  short_description: "把 PDF 文献整理成中文交互导读网页，保留原图动画、公式和训练细节"
+  default_prompt: "使用 $paper-to-web，把这篇 PDF 制作成 RoboTTT 风格的中文交互导读网页。"

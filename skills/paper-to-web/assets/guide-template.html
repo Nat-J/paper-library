@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="day">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="中文论文交互导读的可编辑版式样张：全貌、变量、公式、训练与证据。">
+<title>Paper Guide · 中文交互导读版式样张</title>
+<style>
+:root{color-scheme:light;--bg:#f3f6f2;--paper:#fffefb;--ink:#233b30;--muted:#617267;--line:#d8e1d7;--green:#285641;--amber:#a77c42;--pale:#eef4ec;--blue:#356b98;--blue-bg:#edf3f8;--gold:#8c642c;--gold-bg:#f8f1e5;--teal:#277b78;--teal-bg:#eaf4f1;--purple:#78558d;--purple-bg:#f3edf7;--red:#a04d4a;--red-bg:#f8eeee;--shadow:0 12px 40px #17382d14;--sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;--serif:Georgia,"Songti SC",serif}
+:root[data-theme="night"]{color-scheme:dark;--bg:#101b18;--paper:#282518;--ink:#dce6df;--muted:#b1c0b6;--line:#3e493b;--green:#a4cfb9;--amber:#d4b481;--pale:#1b2b24;--blue:#99c9ed;--blue-bg:#16262e;--gold:#e1bd87;--gold-bg:#2d2618;--teal:#8ed8d0;--teal-bg:#172e29;--purple:#d0b0e3;--purple-bg:#2a1e31;--red:#e5a49c;--red-bg:#342421;--shadow:0 12px 40px #0004}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.9 var(--sans)}a{color:var(--green);text-underline-offset:4px}button,select{font:inherit;color:inherit}button,a,summary{-webkit-tap-highlight-color:transparent}button{cursor:pointer}button:disabled{cursor:default;opacity:.45}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--amber);outline-offset:4px}p{margin:0 0 16px}h1,h2,h3{line-height:1.4}h3{font-size:21px;margin:26px 0 14px}.page{max-width:1840px;margin:auto;padding:0 clamp(12px,2.25vw,44px)}.skip{position:fixed;top:-100px;left:16px;z-index:100;background:var(--paper);padding:10px}.skip:focus{top:12px}.progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:80;background:var(--green)}.masthead{display:flex;justify-content:space-between;gap:20px;padding:24px 0;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:2px}.actions{display:flex;align-items:center;gap:20px;letter-spacing:0}.quiet-button{border:0;background:none;padding:0;font-size:13px;color:var(--muted)}.eyebrow{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:60px;padding:58px 24px 40px}.hero h1{font:clamp(64px,7.7vw,108px)/1.08 var(--serif);letter-spacing:-4px;margin:20px 0}.hero h1 span{color:var(--green)}.subtitle{font-size:clamp(24px,2.5vw,34px);line-height:1.55;font-weight:600;margin:0 0 20px}.paper-title{font-size:13px;color:var(--muted)}.hero-note{padding-top:40px}.hero-note blockquote{font:24px/1.7 var(--serif);margin:0 0 20px;color:var(--green)}.hero-note p{max-width:65ch;color:var(--muted)}.tags{display:flex;flex-wrap:wrap;gap:8px}.tag{font-size:12px;border:1px solid var(--line);padding:3px 10px;border-radius:4px}.route{display:flex;flex-wrap:wrap;gap:0;border-block:1px solid var(--line);margin:0 0 36px}.route a{flex:1;min-width:145px;padding:17px 24px;text-decoration:none;font-size:14px}.route b{font:italic 20px var(--serif);color:var(--amber);margin-right:12px}.section{background:var(--paper);border:1px solid var(--line);border-top:3px solid var(--green);border-radius:18px;margin:0 0 30px;padding:32px clamp(18px,2.3vw,42px) 36px;scroll-margin-top:24px}.section[data-tone="purple"]{border-top-color:var(--purple)}.section[data-tone="gold"]{border-top-color:var(--gold)}.section-head{display:flex;align-items:center;gap:18px;border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:24px}.section-no{flex:none;display:grid;place-items:center;min-width:48px;height:48px;border-radius:12px;background:var(--pale);color:var(--green);font:italic 23px var(--serif)}h2{font-size:28px;margin:0}.lead{font-size:17px;line-height:1.95;max-width:85ch}.note,.source{font-size:13px;color:var(--muted)}.source{margin:20px 0 0}.callout{background:var(--gold-bg);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:6px;padding:16px 22px;margin:22px 0}.callout p:last-child{margin:0}.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:18px 0}.legend span:before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--tone);margin-right:6px}.blue{--tone:var(--blue);--tint:var(--blue-bg)}.gold{--tone:var(--gold);--tint:var(--gold-bg)}.teal{--tone:var(--teal);--tint:var(--teal-bg)}.purple{--tone:var(--purple);--tint:var(--purple-bg)}.green{--tone:var(--green);--tint:var(--pale)}.red{--tone:var(--red);--tint:var(--red-bg)}.pipeline{display:grid;grid-template-columns:1fr 32px 1fr 32px 1fr 32px 1fr;align-items:center;padding:24px;background:var(--pale);border:1px solid var(--line);border-radius:8px}.pipeline a{align-self:stretch;display:flex;flex-direction:column;justify-content:center;background:var(--tint);border:1px solid var(--line);border-top:2px solid var(--tone);border-radius:6px;padding:20px;color:var(--ink);text-decoration:none}.pipeline a small{font-size:11px;letter-spacing:1px;color:var(--tone)}.pipeline a strong{font-size:19px;display:block;margin:6px 0}.pipeline a p{font-size:14px;color:var(--muted);margin:0}.arrow{text-align:center;font-size:24px;color:var(--green)}.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:22px 0}.card{border:1px solid var(--line);background:var(--pale);padding:22px;border-radius:6px}.card h3{margin:0 0 12px}.card p:last-child{margin:0}.variable{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:22px;background:var(--tint);border:1px solid var(--line);border-radius:6px;padding:22px;margin:16px 0}.variable-route{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:20px;border-right:1px solid var(--line);color:var(--tone)}.variable-route div{min-width:0}.variable-route small{display:block;font-size:12px;color:var(--muted)}.variable-route strong{display:block;font-size:20px}.variable-route .symbol{font:29px var(--serif)}.variable-note p{font-size:15px;margin:0 0 9px}.next{display:block;border-top:1px solid var(--line);padding-top:10px;font-size:14px;color:var(--tone)}.formula{background:var(--pale);padding:24px;border:1px solid var(--line);border-radius:6px}.equation{font:clamp(23px,3vw,36px)/2 var(--serif);overflow-x:auto;white-space:nowrap;margin:10px 0 14px}.symbol-button{background:transparent;border:0;border-bottom:1px dotted var(--tone);padding:0 4px;font:inherit;color:var(--tone)}.symbol-button[aria-pressed="true"]{background:var(--tint);border-bottom-style:solid}.explanation{min-height:78px;border-left:3px solid var(--green);padding:14px 18px;background:var(--paper);font-size:15px}.symbol-list{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:20px}.symbol-list div{font-size:14px;border-top:1px solid var(--line);padding-top:12px}.symbol-list b{color:var(--green)}details.extra{border-top:1px solid var(--line);margin-top:20px;padding-top:14px}details.extra summary{cursor:pointer;color:var(--green)}details.extra p{margin-top:12px}.lab{border:1px solid var(--line);background:var(--pale);border-radius:8px;padding:24px;margin:22px 0}.lab-head{display:flex;justify-content:space-between;gap:16px;align-items:baseline}.lab-head h3{margin:0}.steps{display:grid;grid-template-columns:repeat(3,1fr);list-style:none;padding:0;gap:12px;margin:20px 0}.steps button{width:100%;height:100%;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:5px;padding:15px 18px}.steps button[aria-pressed="true"]{border:2px solid var(--green);background:var(--teal-bg);padding:14px 17px}.steps b,.steps span{display:block}.steps b{color:var(--green);font-size:15px}.steps span{font-size:13px;color:var(--muted);margin-top:6px}.lab-output{padding:16px 20px;border-left:3px solid var(--teal);background:var(--paper);min-height:92px}.lab-controls{display:flex;gap:10px;margin-top:16px}.button{background:var(--green);color:var(--paper);padding:7px 16px;border:1px solid var(--green);border-radius:5px;font-size:14px}.button.secondary{color:var(--green);background:transparent}.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;margin:20px 0}table{width:100%;border-collapse:collapse;min-width:540px;font-size:14px}th,td{padding:15px 18px;text-align:left;border-bottom:1px solid var(--line)}th{background:var(--pale);font-weight:600}tr:last-child td{border-bottom:0}td:first-child{font-weight:600}.footer{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:24px;padding:12px 8px 115px}.footer p{max-width:85ch}.map{position:fixed;left:max(22px,env(safe-area-inset-left));bottom:max(22px,env(safe-area-inset-bottom));z-index:60;width:60px;height:60px}.map>summary{display:grid;place-content:center;text-align:center;width:60px;height:60px;list-style:none;border:1px solid #426b55;border-radius:50%;background:#285641;color:#fffefb;box-shadow:var(--shadow);cursor:pointer;font-size:11px;line-height:1.5;user-select:none}.map>summary::-webkit-details-marker{display:none}.map>summary::marker{content:""}.map>summary span:first-child{font-size:23px;line-height:1}.map-panel{position:absolute;left:0;bottom:76px;width:min(310px,calc(100vw - 44px));max-height:calc(100dvh - 120px);overflow:auto;background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px}.map-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px}.map-close{border:1px solid var(--line);border-radius:50%;width:36px;height:36px;background:transparent;font-size:22px;line-height:1}.map nav{padding:10px 0}.map nav a{display:block;padding:9px 12px;border-left:3px solid transparent;text-decoration:none;color:var(--muted);font-size:14px;border-radius:5px}.map nav a[aria-current="location"]{background:var(--pale);color:var(--green);border-left-color:var(--green);font-weight:600}.map-foot{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}.themes{position:fixed;right:max(22px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:4px;z-index:50;border:1px solid var(--line);background:var(--pale);padding:5px;border-radius:14px;box-shadow:var(--shadow)}.themes>span{font-size:11px;padding:0 8px;color:var(--muted)}.themes button{padding:8px 14px;border:0;border-radius:9px;font-size:14px;background:transparent;color:var(--ink)}.themes button[aria-pressed="true"]{background:var(--green);color:var(--paper)}[hidden]{display:none!important}
+@media(max-width:1050px){.hero{gap:32px;padding-inline:8px}.pipeline{grid-template-columns:1fr;padding:18px;gap:0}.pipeline a{padding:18px}.pipeline>.arrow{transform:rotate(90deg);font-size:21px;line-height:1.5}.variable{grid-template-columns:1fr}.variable-route{border-right:0;border-bottom:1px solid var(--line);padding:0 0 16px}.symbol-list{gap:12px}}
+@media(max-width:760px){.masthead{padding:18px 2px;font-size:10px;letter-spacing:1px}.actions{gap:12px}.actions .print{display:none}.hero{grid-template-columns:1fr;gap:12px;padding:32px 8px}.hero h1{font-size:clamp(54px,14vw,90px);letter-spacing:-3px}.hero-note{padding-top:0}.hero-note blockquote{font-size:21px}.route a{min-width:135px;padding:13px 14px;font-size:13px}.section{padding:23px 18px 27px;border-radius:14px}.section-head{gap:12px}.section-no{min-width:40px;height:40px;font-size:20px}h2{font-size:23px}h3{font-size:19px}.lead{font-size:16px}.pair,.steps,.symbol-list{grid-template-columns:1fr}.card,.formula,.lab{padding:18px}.variable{padding:16px;gap:15px}.variable-route{gap:8px}.variable-route strong{font-size:16px}.variable-route .symbol{font-size:25px}.lab-head{display:block}.lab-head .note{display:block;margin-top:8px}.explanation,.lab-output{min-height:0}.footer{display:block}.map{left:max(14px,env(safe-area-inset-left));bottom:max(14px,env(safe-area-inset-bottom));width:56px;height:56px}.map>summary{width:56px;height:56px}.map-panel{bottom:70px;width:min(310px,calc(100vw - 28px));max-height:calc(100dvh - 104px)}.themes{right:max(14px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom))}.themes>span{display:none}.themes button{font-size:13px;padding:8px 10px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
+@media print{ :root,:root[data-theme="night"]{color-scheme:light;--bg:#fff;--paper:#fff;--ink:#111;--muted:#444;--line:#ccc;--green:#285641;--pale:#f4f6f1;--blue:#356b98;--blue-bg:#f2f6fa;--gold:#8c642c;--gold-bg:#faf6ed;--purple:#78558d;--purple-bg:#f5eff8;--teal:#277b78;--teal-bg:#eff7f4}.map,.themes,.progress,.skip,.actions,.lab-controls{display:none!important}.page{padding:0}.hero{padding:24px 0;gap:24px}.hero h1{font-size:58px}.section{border-radius:0;padding:20px;break-inside:auto}.section-head{break-after:avoid}.pipeline{display:block}.pipeline a{break-inside:avoid;margin:8px 0}.pipeline>.arrow{transform:rotate(90deg)}.pair,.symbol-list{display:block}.card,.variable,.formula{break-inside:avoid;margin:12px 0}.section .extra>*{display:block!important}.symbol-button{border:0}.table-wrap{overflow:visible}table{min-width:0}.footer{padding-bottom:0}.themes button{color:#111}}
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#overview">跳到正文</a><div class="progress" aria-hidden="true"></div>
+<div class="page">
+  <header class="masthead"><span>RESEARCH / PAPER GUIDE</span><div class="actions"><span>版式样张 · 非论文总结</span><button class="quiet-button print" type="button">打印 / PDF</button></div></header>
+  <div class="hero">
+    <div><div class="eyebrow">从一篇 PDF，到一条清晰的理解路径</div><h1>Paper<span> Guide.</span></h1><p class="subtitle">先看懂全貌，<br>再看清每一步。</p><p class="paper-title">此文件是可编辑底稿。正式制作时，替换为论文标题、作者、年份、版本与原文入口。</p></div>
+    <div class="hero-note"><blockquote>读者应该能说清楚：<br>“它解决了什么，以及它怎样做到。”</blockquote><p>从一个具体问题出发，用完整流程图建立全貌，再沿着变量、公式和训练过程深入。把证据放在解释旁边，把未报告的信息留在边界里。</p><div class="tags"><span class="tag">整体 pipeline</span><span class="tag">变量追踪</span><span class="tag">训练拆解</span><span class="tag">原图与动画</span></div></div>
+  </div>
+  <nav class="route" aria-label="建议阅读路线"><a href="#overview"><b>01</b>先看全貌</a><a href="#variables"><b>02</b>沿着变量走</a><a href="#formula"><b>03</b>读懂公式</a><a href="#training"><b>04</b>拆开训练</a><a href="#evidence"><b>05</b>回到证据</a></nav>
+  <main>
+    <section class="section" id="overview">
+      <div class="section-head"><span class="section-no">00</span><h2>一条主线：从原文出发，让机制看得见</h2></div>
+      <p class="lead">总览图要让读者先看到一条完整路径。这里展示的是制作导读的过程；正式成品要换成论文真实的处理流程，标清输入、输出、阶段，以及需要的分支与循环。</p>
+      <div class="legend" aria-label="本图图例"><span class="blue">蓝 · 输入材料</span><span class="gold">金 · 证据核对</span><span class="green">绿 · 机制拆解</span><span class="purple">紫 · 阅读成品</span></div>
+      <div class="pipeline" aria-label="导读制作流程">
+        <a class="blue" href="#variables"><small>01 / 输入</small><strong>读完整篇论文</strong><p>正文、附录、原图和官方材料。</p></a><span class="arrow" aria-hidden="true">→</span>
+        <a class="gold" href="#evidence"><small>02 / 核对</small><strong>找到主张的依据</strong><p>把关键事实连回章节、图表与公式。</p></a><span class="arrow" aria-hidden="true">→</span>
+        <a class="green" href="#formula"><small>03 / 拆解</small><strong>把每一步讲清楚</strong><p>输入是什么，怎样变换，又去哪里。</p></a><span class="arrow" aria-hidden="true">→</span>
+        <a class="purple" href="#training"><small>04 / 呈现</small><strong>沿着问题逐层深入</strong><p>从直觉到技术细节，按需展开。</p></a>
+      </div>
+      <div class="callout"><p><strong>先交代图的范围。</strong>这是“制作导读”的示意，不是某篇论文的模型架构。正式图也应明确画的是训练、推理、单步计算，还是完整实验流程。</p></div>
+      <p class="source">样张依据：用户提供的 RoboTTT 导读制作记录；新论文的每张机制图应在这里标出自身来源。</p>
+    </section>
+    <section class="section" id="variables">
+      <div class="section-head"><span class="section-no">01</span><h2>沿着变量走：它从哪里来，又送到哪里？</h2></div>
+      <p class="lead">先认识对象，再读符号。下面只用一个线性预测的教学例子展示卡片结构，变量和值均不代表参考论文。正式网页按论文实际变量增删，不强行套用模块。</p>
+      <article class="variable blue"><div class="variable-route"><div><small>来源</small><strong>输入数值</strong></div><span aria-hidden="true">→</span><div><small>当前样本</small><strong class="symbol">x = 2</strong></div></div><div class="variable-note"><p>这里的 x 是一个标量输入。若原文中的对象是矩阵，要解释每个轴的含义；未报告的维度不猜测。</p><span class="next">下一站 → 送入线性函数 f(x) = wx</span></div></article>
+      <article class="variable green"><div class="variable-route"><div><small>来源</small><strong>模型参数</strong></div><span aria-hidden="true">→</span><div><small>当前取值</small><strong class="symbol">w = 2</strong></div></div><div class="variable-note"><p>w 控制输入如何变成预测。教学例子在训练时更新 w；正式论文还要分清哪些参数在微调、推理阶段会变化。</p><span class="next">下一站 → 与 x 相乘，得到预测 ŷ</span></div></article>
+      <article class="variable purple"><div class="variable-route"><div><small>来源</small><strong>模型计算</strong></div><span aria-hidden="true">→</span><div><small>预测结果</small><strong class="symbol">ŷ = wx</strong></div></div><div class="variable-note"><p>在当前例子中 ŷ = 4；监督标签 y = 6 来自样本。预测和目标是两个不同对象，不能因为符号接近就画成同一条输入。</p><span class="next">下一站 → 与标签 y 比较，计算损失</span></div></article>
+      <p class="source">类型：导读教学示意。正式变量卡标出定义所在的论文公式或章节。</p>
+    </section>
+    <section class="section" id="formula" data-tone="purple">
+      <div class="section-head"><span class="section-no">02</span><h2>把公式读成一句话，再逐个解释符号</h2></div>
+      <p class="lead">这个最小例子只表达一件事：用预测与目标的差异，调整模型参数。点击带点线的符号，可以查看它在这一步负责什么；核心解释仍然写在正文里。</p>
+      <div class="formula"><div class="eyebrow">教学示例 / 并非论文公式</div><div class="equation"><button class="symbol-button red" type="button" data-definition="L" aria-pressed="false">ℒ</button> = ½(<button class="symbol-button purple" type="button" data-definition="prediction" aria-pressed="true">ŷ</button> − <button class="symbol-button gold" type="button" data-definition="target" aria-pressed="false">y</button>)²，<span class="blue">ŷ = wx</span></div><div class="explanation" id="symbol-explanation" aria-live="polite">ŷ 是模型的预测。在这个教学例子中，输入 x = 2、参数 w = 2，因此 ŷ = 4；它不是标签 y = 6。</div><div class="symbol-list"><div><b>ℒ / 损失</b><br>衡量当前预测与目标的差异。</div><div><b>ŷ / 预测</b><br>由当前参数和输入计算而来。</div><div><b>y / 目标</b><br>由教学样本提供的监督值。</div></div></div>
+      <details class="extra"><summary>展开：这个公式具体怎么算？</summary><p>x = 2，w = 2，y = 6，所以 ŷ = 4，ℒ = ½(4 − 6)² = 2。对 w 的梯度为 (wx − y)x = −4。后面的训练演示采用学习率 0.1，这个数值仅为教学选择。</p></details>
+      <p class="source">类型：原创数学教学示意。新论文中的正式公式应保留原编号，并区分原文符号与导读补充记号。</p>
+    </section>
+    <section class="section" id="training" data-tone="gold">
+      <div class="section-head"><span class="section-no">03</span><h2>训练究竟做了什么？让每一步都有对象</h2></div>
+      <p class="lead">数据怎样进入模型，标签在哪一步参与，哪组参数被更新，需要单独说清楚。这里是一次线性模型训练的三步示意；复杂论文可改成配对样本、连续片段或多个训练阶段。</p>
+      <div class="lab"><div class="lab-head"><h3>一次更新，逐步看清</h3><span class="note">教学示意 · 非真实训练样本</span></div><ol class="steps"><li><button type="button" data-step="0" aria-pressed="true"><b>01 / 读取样本</b><span>输入 x = 2，标签 y = 6</span></button></li><li><button type="button" data-step="1" aria-pressed="false"><b>02 / 计算误差</b><span>w = 2，预测 ŷ = 4，损失 ℒ = 2</span></button></li><li><button type="button" data-step="2" aria-pressed="false"><b>03 / 更新参数</b><span>w 由 2 变成 2.4，新预测为 4.8</span></button></li></ol><div class="lab-output" id="step-output" aria-live="polite">步骤 1 / 3：读取教学样本 (x = 2, y = 6)。x 是模型输入，y 是监督目标；参数 w 此时仍为 2。</div><div class="lab-controls"><button class="button secondary" id="step-reset" type="button">回到起点</button><button class="button" id="step-next" type="button">下一步 →</button></div></div>
+      <div class="pair"><div class="card"><h3>样本如何组织？</h3><p>正式导读区分数据配对、连续 clip、完整轨迹与逐帧对齐。它们回答不同问题，不要用一个“数据集”标签全部带过。</p></div><div class="card"><h3>参数何时变化？</h3><p>分别交代预训练、微调、部署的可更新参数；适用时说明状态如何传递、何时重置，以及梯度是否跨越边界。</p></div></div>
+      <p class="source">类型：教学示意。正式导读在此附上训练章节与附录来源，另列数据规模和计算资源。</p>
+    </section>
+    <section class="section" id="evidence">
+      <div class="section-head"><span class="section-no">04</span><h2>结果与边界，都要能回到原文</h2></div>
+      <p class="lead">一段成功视频说明“这一例做到了什么”；结果表才回答“在什么条件下，有多少次做到了”。官方原图、动画和视频保留原貌，中文提示解释该看哪里。</p>
+      <div class="table-wrap"><table><thead><tr><th>信息类型</th><th>网页怎样呈现</th><th>需要保留的边界</th></tr></thead><tbody><tr><td>原文事实</td><td>指标、单位、基线、样本量及出处</td><td>比较口径和实验条件一致</td></tr><tr><td>教学示意</td><td>用最小例子解释机制</td><td>明确不是论文原始样本或内部可视化</td></tr><tr><td>解释性推断</td><td>说明从哪些观察得到理解</td><td>与作者直接证明的结论分开</td></tr><tr><td>未报告信息</td><td>写“论文未报告”，列出已核对范围</td><td>不能用默认配置或猜测补齐</td></tr></tbody></table></div>
+      <div class="callout"><p><strong>正式成品的媒体放在相应解释附近。</strong>每个视频配控制、海报和来源，每张关键图配中文读图提示；未取得原片时，提供入口并说明联网要求。</p></div>
+      <p class="source">样张设计来源：<a href="https://chatgpt.com/s/cx_6ad8b99752748191ab5ad70953721740" target="_blank" rel="noopener">用户提供的 RoboTTT 共享记录</a>。正式成品应将此处替换为新论文的证据入口。</p>
+    </section>
+  </main>
+  <footer class="footer"><p>这是 paper-to-web skill 的可编辑版式样张。正式输出替换所有样张内容、论文身份和证据来源，保留作者署名及媒体归属。</p><a href="#top">返回顶部 ↑</a></footer>
+</div>
+<details class="map" id="reading-map"><summary aria-label="展开或收起论文导读目录"><span aria-hidden="true">☷</span><span>目录</span></summary><div class="map-panel"><div class="map-head"><div><div class="eyebrow">READING MAP</div><strong>按问题阅读</strong></div><button class="map-close" type="button" aria-label="关闭目录">×</button></div><nav aria-label="论文导读目录"><a href="#overview" aria-current="location">00 · 全篇主线</a><a href="#variables">01 · 沿着变量走</a><a href="#formula">02 · 把公式读懂</a><a href="#training">03 · 拆开训练过程</a><a href="#evidence">04 · 证据与边界</a></nav><div class="map-foot">阅读进度 <span id="reading-percent">0%</span></div></div></details>
+<div class="themes" role="group" aria-label="页面配色"><span>配色</span><button type="button" data-theme-choice="day" aria-pressed="true">☀ 日间</button><button type="button" data-theme-choice="night" aria-pressed="false">☾ 夜间</button></div>
+<script>
+(() => {
+  const root = document.documentElement;
+  const themeButtons = [...document.querySelectorAll('[data-theme-choice]')];
+  function setTheme(theme) {
+    root.dataset.theme = theme;
+    themeButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.themeChoice === theme)));
+    try { localStorage.setItem('paper-guide-theme', theme); } catch {}
+  }
+  let savedTheme;
+  try { savedTheme = localStorage.getItem('paper-guide-theme'); } catch {}
+  setTheme(savedTheme === 'night' ? 'night' : 'day');
+  themeButtons.forEach(button => button.addEventListener('click', () => setTheme(button.dataset.themeChoice)));
+
+  const directory = document.getElementById('reading-map');
+  const directoryLinks = [...directory.querySelectorAll('nav a')];
+  const sections = [...document.querySelectorAll('main > section[id]')];
+  const progress = document.querySelector('.progress');
+  const percent = document.getElementById('reading-percent');
+  directory.querySelector('.map-close').addEventListener('click', () => { directory.open = false; directory.querySelector('summary').focus(); });
+  directoryLinks.forEach(link => link.addEventListener('click', () => { directory.open = false; }));
+  document.addEventListener('click', event => { if (!directory.contains(event.target)) directory.open = false; });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && directory.open) { directory.open = false; directory.querySelector('summary').focus(); } });
+  function updateReading() {
+    const length = document.documentElement.scrollHeight - innerHeight;
+    const value = length > 0 ? Math.min(100, Math.max(0, Math.round(scrollY / length * 100))) : 100;
+    progress.style.width = `${value}%`;
+    percent.textContent = `${value}%`;
+    let current = sections[0];
+    for (const section of sections) if (section.getBoundingClientRect().top <= innerHeight * .3) current = section;
+    directoryLinks.forEach(link => {
+      if (current && link.hash === `#${current.id}`) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
+  }
+  let scheduled = false;
+  addEventListener('scroll', () => { if (!scheduled) { scheduled = true; requestAnimationFrame(() => { updateReading(); scheduled = false; }); } }, {passive:true});
+  addEventListener('resize', updateReading);
+  addEventListener('load', updateReading);
+  updateReading();
+  document.querySelector('.print').addEventListener('click', () => print());
+
+  const definitions = {
+    L: 'ℒ 是损失，用来衡量当前预测和目标的差异。在本教学例子中，ℒ = ½(4 − 6)² = 2。',
+    prediction: 'ŷ 是模型的预测。在这个教学例子中，输入 x = 2、参数 w = 2，因此 ŷ = 4；它不是标签 y = 6。',
+    target: 'y 是教学样本提供的监督目标，这里设为 6。目标来自数据；预测 ŷ 则由模型计算得到。'
+  };
+  const symbolButtons = [...document.querySelectorAll('[data-definition]')];
+  symbolButtons.forEach(button => button.addEventListener('click', () => {
+    document.getElementById('symbol-explanation').textContent = definitions[button.dataset.definition];
+    symbolButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+  }));
+  const stepNotes = [
+    '步骤 1 / 3：读取教学样本 (x = 2, y = 6)。x 是模型输入，y 是监督目标；参数 w 此时仍为 2。',
+    '步骤 2 / 3：当前 w = 2，预测 ŷ = wx = 4。与标签 y = 6 比较，损失 ℒ = ½(4 − 6)² = 2。此时还没有更新参数。',
+    '步骤 3 / 3：梯度 ∂ℒ/∂w = (wx − y)x = −4。教学学习率取 0.1，w ← 2 − 0.1 × (−4) = 2.4。新预测为 4.8。这只是一次更新，并未等于训练完成。'
+  ];
+  const stepButtons = [...document.querySelectorAll('[data-step]')];
+  const nextButton = document.getElementById('step-next');
+  let activeStep = 0;
+  function showStep(index) {
+    activeStep = index;
+    stepButtons.forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.step) === index)));
+    document.getElementById('step-output').textContent = stepNotes[index];
+    nextButton.disabled = index === stepNotes.length - 1;
+  }
+  stepButtons.forEach(button => button.addEventListener('click', () => showStep(Number(button.dataset.step))));
+  nextButton.addEventListener('click', () => showStep(Math.min(activeStep + 1, stepNotes.length - 1)));
+  document.getElementById('step-reset').addEventListener('click', () => showStep(0));
+})();
+</script>
+</body>
+</html>
