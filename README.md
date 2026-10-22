@@ -6,7 +6,7 @@
 
 下载或克隆整个仓库后，双击根目录的 `index.html` 打开文献总目录，也可以进入论文文件夹，打开其中的 `index.html`。导读主体和已收录媒体可离线阅读，访问作者官网需要网络。
 
-本机保存位置：`~/Documents/文献/`，对应 Finder 的“文稿 → 文献”。GitHub 仓库页面用于查看文件和下载，HTML 导读请下载后在浏览器中打开。
+本机保存位置：`~/Documents/paper-library/`，对应 Finder 的“文稿 → paper-library”。GitHub 仓库页面用于查看文件和下载，HTML 导读请下载后在浏览器中打开。
 
 | 年份 | 文献 | 导读 | 原文 | 来源 |
 | --- | --- | --- | --- | --- |
@@ -15,7 +15,7 @@
 ## 目录
 
 ```text
-文献/
+paper-library/
 ├── index.html                 文献总目录
 ├── 2024-pi0/
 │   ├── index.html             中文交互导读
@@ -34,14 +34,14 @@
 使用 $paper-to-web，把这篇 PDF 做成中文交互导读网页。
 ```
 
-默认将导读归档到文稿下的“文献”文件夹，并更新总目录。修改 skill 时，同时更新仓库内的归档副本和本机已安装副本。
+默认将导读归档到文稿下的“paper-library”文件夹，并更新总目录。修改 skill 时，同时更新仓库内的归档副本和本机已安装副本。
 
 ## 同步到 GitHub
 
 新增或修改导读后，在本地文献目录执行：
 
 ```sh
-cd "$HOME/Documents/文献"
+cd "$HOME/Documents/paper-library"
 git add .
 git commit -m "更新文献导读"
 git push

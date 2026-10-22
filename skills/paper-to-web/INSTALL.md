@@ -20,7 +20,7 @@ paper-to-web/
 
 ## 默认保存位置
 
-本地 agent 默认将成品归档到 `~/Documents/文献/`（macOS 的“文稿 → 文献”），用户另指定目录时以指定位置为准。每篇论文独立存放，例如 `2024-pi0/`，包含导读 `index.html`、原文 PDF、本地媒体与 `SOURCES.md`；同时更新文献根目录的 `index.html` 总目录。以后双击总目录或论文页即可阅读，无需 agent 或常驻服务。备份时复制整个文献文件夹。
+本地 agent 默认将成品归档到 `~/Documents/paper-library/`（macOS 的“文稿 → paper-library”），用户另指定目录时以指定位置为准。每篇论文独立存放，例如 `2024-pi0/`，包含导读 `index.html`、原文 PDF、本地媒体与 `SOURCES.md`；同时更新文献根目录的 `index.html` 总目录。以后双击总目录或论文页即可阅读，无需 agent 或常驻服务。备份时复制整个 paper-library 文件夹。
 
 云端平台无法直接写入用户电脑时，应交付完整成品 ZIP，由用户解压到自己的文献目录；云端沙箱里的 `Documents` 不等于用户本机的“文稿”。
 
