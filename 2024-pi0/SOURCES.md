@@ -7,6 +7,7 @@
 1. 用户提供的《π0: A Vision-Language-Action Flow Model for General Robot Control》PDF，共 17 页，作者 Kevin Black 等 / Physical Intelligence。包内 `assets/paper.pdf` 是原文件副本；以下页码均为文件页序号。原 PDF 未在正文显式标出 arXiv 修订号，不据其创建日期推断发表日期。
 2. [Physical Intelligence 官方项目页](https://www.pi.website/blog/pi0)，检查日期 2026-10-22。原域名 `physicalintelligence.company/blog/pi0` 当前重定向至该页。用于确认原始工作发布于 2024-10-31、获取官方演示文件，并核对网站与 PDF 的口径差异。技术解释与实验结论以用户提供 PDF 为主。
 3. 用户此前指定的 RoboTTT 风格，由本地 `paper-to-web` skill 提供的版式规范与底稿继承。该风格来源不作为 π0 论文技术事实的证据。
+4. [OpenVLA 原论文 v1，2024-06-13](https://arxiv.org/html/2406.09246v1)，2026-10-23 核对 Fig. 2、§3.2、§6；[官方项目页](https://openvla.github.io/)用于交叉核对图像编码器、投影与语言模型。新增图中对照的是 2024 原版，不代表其他版本的输入、动作块或解码方式。此来源只用于说明 baseline，不替代 π0 PDF 的实验依据。
 
 ## 主张 → 原文 → 网页位置
 
@@ -40,6 +41,17 @@
 | #evidence | 装鸡蛋 scratch 在 Fig. 13 中略高于 fine-tuned | 对原图的定性读取 | PDF 第 11 页，Fig. 13；未从柱高杜撰精确数字 |
 | #limits | 数据组成未最优化、可靠性不足、远领域迁移未证明 | 原文限制 | PDF 第 12 页，§VII |
 | #limits | 无 RoboTTT 式 fast-weight 流程；人类示范重定向非本文方案 | 依据方法边界的澄清 | 本文 §IV、附录 B / D 没有此输入或更新流程；不扩大到其他 π 系列论文 |
+| #method-comparison | OpenVLA 原版单图＋语言、视觉编码器＋投影＋Llama 2、逐个预测离散动作分量、单步 7 维控制 | 外部背景事实 / 原创对照图 | OpenVLA v1 Fig. 2、§3.2、§6；官方项目页 The OpenVLA Model |
+| #method-comparison | π0 状态输入、两套权重、50 步连续动作块、10 次积分 | 原文事实 / 原创对照图 | 本 PDF 第 5、15–16 页，§IV、附录 B–D；图中为明确 τ 输入写成 vθ(A, oₜ, τ) |
+| #baseline-comparison | π0-small 的观测编码器、cross-attention、DiT、AdaLN-Zero；π0 的 self-attention 与按 token 路由 | 原文事实 / 原创局部架构图 | 本 PDF 第 15–16 页，附录 B–C；省略投影和状态路由细节，不代表完整逐层实现 |
+| #baseline-comparison | 两者输入格式与 10 步 flow matching 相同，但同时改变多项设计，不能分离归因为单一因素 | 原文事实与实验边界解释 | 附录 C 列出六项差异与共同条件；未虚构单因素消融结论 |
+
+## 新增方法对照图（2026-10-23）
+
+- `assets/compare-openvla-pi0.svg`：输入、模型、动作生成和输出按列对应；七个离散 token 表示一个时刻的动作分量，五十表示 π0 的未来动作步，十表示积分步。矩阵色块只示意动作形状，不是实测动作值。两行设置不同，不据此推断性能或速度倍数。
+- `assets/compare-pi0-small.svg`：聚焦专家连接方式及初始化；箭头从条件表示指向读取它的动作侧，不表示图文 token 反向读取动作。底部保留共同条件，说明多项设计同时变化。
+- 两图是根据以上原始文献制作的 SVG 教学重绘，支持独立打开和放大；没有用生成式图片猜测技术连线。
+- 新增内容已检查：SVG XML、本地资源与锚点、桌面实际渲染、390 CSS 像素窄屏与夜间模式、图内键盘横向滚动。窄屏整页无横向溢出；没有重新测试正文全部旧交互。
 
 ## 原图
 

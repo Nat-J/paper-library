@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="800" viewBox="0 0 1440 800" role="img" aria-labelledby="title desc">
+<title id="title">π0-small 与 π0 的观测编码、动作专家和注意力连接对照</title>
+<desc id="desc">π0-small 用观测编码器和 DiT 动作专家，通过 cross-attention 读取观测。π0 在单个 Transformer 中按 token 类型路由到两套权重，经 self-attention 连接。两者都有相同观测格式、动作块和十步 flow matching；实验同时改变多项设计。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#63776e"/></marker></defs>
+<rect width="1440" height="800" rx="16" fill="#fffefb"/>
+<g font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif" fill="#233b30">
+  <text x="28" y="40" font-size="27" font-weight="700">π0-small 与 π0：底座和专家的连接方式一起变了</text>
+  <text x="28" y="71" font-size="17" fill="#617267">聚焦模型内部连接 · 原创教学简图 · 为看清差异，省略各输入的投影与状态 token 的细分路由</text>
+
+  <rect x="20" y="95" width="1400" height="274" rx="12" fill="#f6f1e8" stroke="#dfcfb4"/>
+  <text x="42" y="129" font-size="23" font-weight="700" fill="#8c642c">π0-small · 约 470M 参数 · 非 VLM 初始化的 baseline</text>
+  <rect x="44" y="161" width="200" height="130" rx="7" fill="#fffefb" stroke="#b39b73"/>
+  <text x="66" y="193" font-size="19" font-weight="600">图像与语言</text><text x="66" y="229" font-size="18">各相机 ViT</text><text x="66" y="259" font-size="18">＋ DistilBERT</text>
+  <path d="M251 227H290" stroke="#63776e" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="300" y="161" width="317" height="130" rx="7" fill="#fffefb" stroke="#b39b73"/>
+  <text x="324" y="194" font-size="21" font-weight="600">观测编码器</text><text x="324" y="227" font-size="18">编码当前观测，形成表示</text><text x="324" y="261" font-size="16" fill="#617267">此 Transformer 无互联网预训练</text>
+  <path d="M624 227H797" stroke="#63776e" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="711" y="205" text-anchor="middle" font-size="17" font-weight="600" fill="#8c642c">cross-attention</text>
+  <text x="711" y="256" text-anchor="middle" font-size="16" fill="#617267">动作侧读取观测表示</text>
+  <rect x="808" y="161" width="320" height="130" rx="7" fill="#f3edf7" stroke="#a88cbc"/>
+  <text x="832" y="195" font-size="22" font-weight="600">DiT 动作专家</text><text x="832" y="230" font-size="18">处理带噪动作 Aτ</text><text x="832" y="263" font-size="16" fill="#617267">τ 通过 AdaLN-Zero 注入</text>
+  <path d="M1135 227H1182" stroke="#63776e" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="1193" y="177" width="192" height="99" rx="7" fill="#fffefb" stroke="#a88cbc"/>
+  <text x="1211" y="214" font-size="19">预测向量场 vθ</text><text x="1211" y="247" font-size="18">→ 积分更新动作</text>
+  <text x="44" y="340" font-size="18" fill="#8c642c">连接形态：观测编码器提供信息，动作专家用跨注意力读取；两部分构成 encoder–decoder 式结构。</text>
+
+  <rect x="20" y="392" width="1400" height="279" rx="12" fill="#eef4ec" stroke="#c7d8ca"/>
+  <text x="42" y="428" font-size="23" font-weight="700" fill="#285641">π0 · 约 3.3B 参数 · 从 PaliGemma 初始化图文侧权重</text>
+  <rect x="44" y="468" width="200" height="130" rx="7" fill="#fffefb" stroke="#83a38d"/>
+  <text x="66" y="505" font-size="19" font-weight="600">图像与语言</text><text x="66" y="541" font-size="18">编码为图文 tokens</text><text x="66" y="573" font-size="16" fill="#617267">沿用图文预训练底座</text>
+  <path d="M251 533H290" stroke="#63776e" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="300" y="451" width="828" height="172" rx="9" fill="#fffefb" stroke="#83a38d" stroke-width="2"/>
+  <text x="322" y="478" font-size="17" font-weight="600" fill="#285641">同一个 Transformer · 按 token 类型路由到不同权重</text>
+  <rect x="322" y="494" width="276" height="102" rx="6" fill="#edf3f8" stroke="#8ba9c4"/>
+  <text x="342" y="527" font-size="20" font-weight="600">VLM 权重</text><text x="342" y="559" font-size="18">处理图像与语言 tokens</text><text x="342" y="583" font-size="15" fill="#617267">图文侧不读取后面的动作块</text>
+  <path d="M605 545H792" stroke="#63776e" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="698" y="524" text-anchor="middle" font-size="17" font-weight="600" fill="#285641">self-attention</text>
+  <text x="698" y="577" text-anchor="middle" font-size="16" fill="#617267">动作侧读取图文条件</text>
+  <rect x="803" y="494" width="302" height="102" rx="6" fill="#e7f1e6" stroke="#83a38d"/>
+  <text x="823" y="527" font-size="20" font-weight="600">Gemma 式动作专家权重</text><text x="823" y="559" font-size="18">处理状态、带噪动作 tokens</text><text x="823" y="583" font-size="15" fill="#617267">τ 通过动作输入 MLP 融合</text>
+  <path d="M1135 545H1182" stroke="#63776e" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="1193" y="496" width="192" height="99" rx="7" fill="#fffefb" stroke="#a88cbc"/>
+  <text x="1211" y="533" font-size="19">预测向量场 vθ</text><text x="1211" y="566" font-size="18">→ 积分更新动作</text>
+  <text x="44" y="650" font-size="18" fill="#285641">连接形态：两套权重在 Transformer 自注意力层中交互；图中箭头表示条件信息被动作侧读取。</text>
+
+  <rect x="28" y="695" width="1384" height="78" rx="7" fill="#f0f4f8" stroke="#cbd8e4"/>
+  <text x="48" y="726" font-size="19" font-weight="600">保持相同：观测格式（都含机器人状态 q）、动作块、10 步 flow matching。</text>
+  <text x="48" y="755" font-size="17" fill="#617267">同时改变：预训练底座、视觉 / 语言编码器、专家连接和 τ 注入方式。因此两者的成绩差异不能只归因于“有无 VLM 预训练”。</text>
+  <text x="28" y="794" font-size="14" fill="#617267">来源：π0 PDF 第 5 页，§IV；第 15–16 页，附录 B–C。图是对原文机制的简化重绘，不是程序模块的逐层复刻。</text>
+</g>
+</svg>

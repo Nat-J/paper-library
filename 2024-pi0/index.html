@@ -15,6 +15,9 @@
 
 .flow-plot-scroll{overflow-x:auto;overscroll-behavior-x:contain}.flow-plot-scroll .flow-plot{min-width:600px}.flow-plot-scroll:focus-visible{outline:2px solid var(--amber)}
 @media print{.flow-plot-scroll{overflow:visible}.flow-plot-scroll .flow-plot{min-width:0}}
+
+.comparison-figure{margin:26px 0}.comparison-figure .figure-tools{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 10px;font-size:13px;color:var(--muted)}.comparison-figure .diagram-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:9px;background:#fffefb;padding:8px}.comparison-figure img{display:block;width:100%;min-width:1100px;height:auto}.comparison-figure figcaption{font-size:14px;line-height:1.85;color:var(--muted);margin-top:12px}.comparison-figure figcaption strong{color:var(--green)}
+@media print{.comparison-figure .diagram-scroll{overflow:visible;padding:0}.comparison-figure img{min-width:0}.comparison-figure .figure-tools{display:none}}
 </style></head><body id="top">
 <a class="skip" href="#overview">跳到正文</a><div class="progress" aria-hidden="true"></div>
 <div class="page">
@@ -47,8 +50,13 @@
 <section class="section" id="problem" data-nav="为什么这样设计" data-tone="gold">
 <div class="section-head"><span class="section-no">01</span><h2>为什么不能只把机器人动作当成“另一种文字”？</h2></div>
 <p class="lead">理解“把衣袖折进去”和真正把衣袖折好，是两种难度。机器人要在连续的关节空间里处理微小误差、接触变化和多种可行操作方式；还要足够快，不能只输出一个语义上正确的答案。</p>
-<div class="pair"><div class="card"><div class="eyebrow">已有路线 · 继承知识</div><h3>VLM → VLA</h3><p>RT-2、OpenVLA 等工作表明，图文预训练可以帮助机器人理解指令与场景。但把动作离散化后自回归生成，会给高频、多维、长动作块的表达带来挑战。</p></div><div class="card"><div class="eyebrow">π0 的选择 · 连续输出</div><h3>VLM ＋ Flow Matching</h3><p>保留图文底座，增加专门处理状态与动作的权重。一次建模一个连续动作块，用多次向量场预测把噪声变成条件动作分布中的样本。</p></div></div>
-<div class="table-wrap"><table><thead><tr><th>已有思想</th><th>提供了什么</th><th>π0 怎样组合它们</th></tr></thead><tbody><tr><td>图文预训练 / PaliGemma</td><td>图像与语言表征、语义迁移</td><td>作为约 3B 的 VLM 初始化</td></tr><tr><td>Flow Matching / 扩散式动作生成</td><td>对连续、多模态动作分布进行建模</td><td>以向量场损失训练动作输出</td></tr><tr><td>Action Chunking</td><td>联合预测未来一段动作</td><td>每块 H = 50，动作 token 块内双向注意力</td></tr><tr><td>跨机器人数据与后训练</td><td>共享经验，再针对目标任务精修</td><td>广泛数据打底，高质量任务数据专门化</td></tr></tbody></table></div>
+<figure class="comparison-figure" id="method-comparison">
+<div class="figure-tools"><span>原创方法对照图 · 窄屏可左右滑动</span><a href="assets/compare-openvla-pi0.svg" target="_blank" rel="noopener">单独打开 / 放大 ↗</a></div>
+<div class="diagram-scroll" role="region" aria-label="OpenVLA 与 π0 方法对照图，可左右滚动" tabindex="0"><img src="assets/compare-openvla-pi0.svg" width="1440" height="850" alt="两条对应路径：OpenVLA 逐个生成同一时刻的七个离散动作分量，π0 用双专家和十次积分生成五十个未来连续动作。"></div>
+<figcaption><strong>先看第三列：π0 改的是动作的表示和生成方式。</strong>上行的 7 是一个动作的分量数；下行的 50 是未来动作数，10 是积分次数。这三个数不能直接相除来宣称加速。OpenVLA 对照限定为 2024 年原版；两者的动作坐标与机器人设置不同。</figcaption>
+<p class="source">对照依据：<a href="https://arxiv.org/html/2406.09246v1#S3" target="_blank" rel="noopener">OpenVLA 原论文，Fig. 2、§3.2</a>、<a href="https://arxiv.org/html/2406.09246v1#S6" target="_blank" rel="noopener">§6 输入与动作块限制</a>；<a href="assets/paper.pdf#page=5" target="_blank">π0 PDF 第 5 页，§IV</a>与<a href="assets/paper.pdf#page=15" target="_blank">附录 B–D</a>。</p>
+</figure>
+<details class="extra"><summary>补充：π0 继承了哪些已有思想？</summary><div class="table-wrap"><table><thead><tr><th>已有思想</th><th>提供了什么</th><th>π0 怎样组合它们</th></tr></thead><tbody><tr><td>图文预训练 / PaliGemma</td><td>图像与语言表征、语义迁移</td><td>作为约 3B 的 VLM 初始化</td></tr><tr><td>Flow Matching / 扩散式动作生成</td><td>对连续、多模态动作分布进行建模</td><td>以向量场损失训练动作输出</td></tr><tr><td>Action Chunking</td><td>联合预测未来一段动作</td><td>每块 H = 50，动作 token 块内双向注意力</td></tr><tr><td>跨机器人数据与后训练</td><td>共享经验，再针对目标任务精修</td><td>广泛数据打底，高质量任务数据专门化</td></tr></tbody></table></div></details>
 <p>这项工作的贡献具有整合性：不是只提出一个新的输出头，还一起验证了架构、数据组合与预训练 / 后训练配方。它也不意味着连续输出一定在每个任务、每种数据预算下都胜过其他方法。</p>
 <p class="source">依据：<a href="assets/paper.pdf#page=3" target="_blank">PDF 第 3–4 页，§II–III</a>。方法间的比较范围以论文实际实验为准。</p>
 </section>
@@ -64,6 +72,13 @@
 <article class="variable green"><div class="variable-route"><div><small>来源：训练获得的参数</small><strong>模型权重 θ</strong></div><span aria-hidden="true">→</span><div><small>执行前向计算</small><strong class="symbol">v<sub>θ</sub></strong></div></div><div class="variable-note"><p>v<sub>θ</sub> 表示动作空间中“接下来向哪里改”的向量，不是最终要执行的动作，也不是机器人末端速度的通用物理定义。要先积分，得到 A<sub>t</sub><sup>1</sup>。</p><span class="next">下一站 → Euler 更新带噪动作。推理改变的是 A<sup>τ</sup>，不是重新训练 θ。</span></div></article>
 <div class="mask-lab"><div class="lab-head"><h3>注意力掩码：这一组 token 能读取谁？</h3><span class="note">点选行名查看 · 按附录 B 重绘</span></div><div class="table-wrap"><table class="mask-table"><thead><tr><th>读取方 ↓ / 被读取方 →</th><th>图像＋语言</th><th>状态 q<sub>t</sub></th><th>动作 A<sup>τ</sup></th></tr></thead><tbody><tr data-mask-row="vlm"><th><button type="button" class="mask-choice" data-mask="vlm" aria-pressed="false">图像＋语言</button></th><td class="allowed">✓</td><td>—</td><td>—</td></tr><tr data-mask-row="state"><th><button type="button" class="mask-choice" data-mask="state" aria-pressed="false">状态 q<sub>t</sub></button></th><td class="allowed">✓</td><td class="allowed">✓</td><td>—</td></tr><tr data-mask-row="action" class="selected"><th><button type="button" class="mask-choice" data-mask="action" aria-pressed="true">动作 A<sup>τ</sup></button></th><td class="allowed">✓</td><td class="allowed">✓</td><td class="allowed">✓</td></tr></tbody></table></div><p id="mask-note" class="explanation" aria-live="polite">动作 token 可以读取图文、状态，以及同一个动作块中的全部动作 token。因此不是“先生成 aₜ，再只看过去生成 aₜ₊₁”的逐动作自回归。</p></div>
 <details class="extra"><summary>两个专家的宽度不同，为什么还能交互？</summary><p>附录 B 报告 VLM 隐藏宽度 2048、动作专家宽度 1024，动作专家 MLP 宽度 4096。两套权重只在注意力计算中交互，因此隐藏宽度和 MLP 大小不必一致。不要把不同的输入 / 隐藏维度直接当成可以逐元素相加的对象。</p></details>
+<h3>对照 π0-small：哪些设计一起变了？</h3>
+<figure class="comparison-figure" id="baseline-comparison">
+<div class="figure-tools"><span>原创局部架构对照图 · 看专家如何读取观测</span><a href="assets/compare-pi0-small.svg" target="_blank" rel="noopener">单独打开 / 放大 ↗</a></div>
+<div class="diagram-scroll" role="region" aria-label="π0-small 与 π0 专家连接对照图，可左右滚动" tabindex="0"><img src="assets/compare-pi0-small.svg" width="1440" height="800" loading="lazy" alt="上行 π0-small 是观测编码器经跨注意力连接 DiT 动作专家；下行 π0 在同一 Transformer 中按 token 类型使用两套权重，经自注意力连接。两者都做十步 flow matching。"></div>
+<figcaption><strong>看中间的连线：跨注意力连接，变成同一 Transformer 内的自注意力交互。</strong>与此同时，图文底座、视觉 / 语言编码器、动作专家及 τ 注入方式也不同。因此 π0-small 的成绩差异不能只当作“去掉 VLM 预训练”这一项的效果。两者实际都接收相同格式的观测并用 10 步 flow matching 生成动作块；图中省略投影层和状态 token 的细分路由。</figcaption>
+<p class="source">依据：<a href="assets/paper.pdf#page=15" target="_blank">PDF 第 15 页，附录 B：π0 架构</a>；<a href="assets/paper.pdf#page=16" target="_blank">第 16 页，附录 C：π0-small 架构与共有条件</a>。本图为机制重绘。</p>
+</figure>
 <p class="source">依据：<a href="assets/paper.pdf#page=5" target="_blank">PDF 第 5–6 页，§IV–V</a>；<a href="assets/paper.pdf#page=15" target="_blank">第 15 页，附录 B</a>。图文 token 数、精确图像分辨率等未披露项不以其他版本代码补齐。</p>
 </section>
 

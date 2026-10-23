@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="850" viewBox="0 0 1440 850" role="img" aria-labelledby="title desc">
+<title id="title">OpenVLA 原版与 π0 的输入、模型和动作生成方式对照</title>
+<desc id="desc">OpenVLA 从图像和指令逐个生成一个时刻的七个离散动作分量。π0 还接收机器人状态，用图文权重和动作专家，通过十次积分联合生成五十个未来连续动作。箭头表示功能依赖，图不是实测速度比较。</desc>
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#63776e"/></marker>
+  <marker id="purple-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#78558d"/></marker>
+  <pattern id="action-grid" width="24" height="22" patternUnits="userSpaceOnUse"><rect width="21" height="19" rx="3" fill="#e1d7ec" stroke="#b69cc9"/></pattern>
+</defs>
+<rect width="1440" height="850" rx="16" fill="#fffefb"/>
+<g font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif" fill="#233b30">
+  <text x="28" y="40" font-size="27" font-weight="700">生成方式改了哪里？沿着两条路径看</text>
+  <text x="28" y="70" font-size="17" fill="#617267">推理阶段 · 原创机制对照图 · 方框按功能对应，图中没有表示运行耗时</text>
+  <g font-size="17" font-weight="600" fill="#617267"><text x="42" y="112">01｜输入</text><text x="310" y="112">02｜编码与模型</text><text x="665" y="112">03｜动作生成规则</text><text x="1145" y="112">04｜输出</text></g>
+  <rect x="20" y="128" width="1400" height="258" rx="12" fill="#f0f4f8" stroke="#cbd8e4"/>
+  <text x="42" y="162" font-size="23" font-weight="700" fill="#356b98">OpenVLA · 2024 原版</text>
+  <rect x="42" y="184" width="215" height="145" rx="8" fill="#fffefb" stroke="#8ba9c4"/>
+  <g fill="none" stroke="#356b98" stroke-width="2"><rect x="66" y="204" width="52" height="35" rx="4"/><circle cx="103" cy="215" r="4"/><path d="M70 234L82 221L93 231L100 225L113 235"/></g>
+  <text x="130" y="229" font-size="20" font-weight="600">1 路图像</text>
+  <text x="66" y="266" font-size="20">＋ 语言指令</text>
+  <text x="66" y="305" font-size="16" fill="#617267">先看，再按指令行动</text>
+  <rect x="301" y="184" width="310" height="145" rx="8" fill="#fffefb" stroke="#8ba9c4"/>
+  <text x="325" y="215" font-size="18">DINOv2 ＋ SigLIP</text><text x="325" y="242" font-size="16" fill="#617267">图像特征 → 投影到语言空间</text>
+  <path d="M456 252V267" stroke="#63776e" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="325" y="276" width="262" height="37" rx="5" fill="#e5edf5"/>
+  <text x="456" y="301" font-size="21" font-weight="600" text-anchor="middle">Llama 2 7B</text>
+  <rect x="655" y="184" width="440" height="145" rx="8" fill="#fffefb" stroke="#8ba9c4"/>
+  <text x="678" y="215" font-size="19" font-weight="600">动作分量离散化 → 逐个生成 token</text>
+  <g fill="#e5edf5" stroke="#8ba9c4"><rect x="677" y="234" width="42" height="38" rx="4"/><rect x="733" y="234" width="42" height="38" rx="4"/><rect x="789" y="234" width="42" height="38" rx="4"/><rect x="845" y="234" width="42" height="38" rx="4"/><rect x="901" y="234" width="42" height="38" rx="4"/><rect x="957" y="234" width="42" height="38" rx="4"/><rect x="1013" y="234" width="42" height="38" rx="4"/></g>
+  <g font-size="17" text-anchor="middle"><text x="698" y="259">x</text><text x="754" y="259">y</text><text x="810" y="259">z</text><text x="866" y="259">rₓ</text><text x="922" y="259">rᵧ</text><text x="978" y="259">r_z</text><text x="1034" y="259">g</text></g>
+  <g font-size="17" fill="#63776e"><text x="720" y="259">→</text><text x="776" y="259">→</text><text x="832" y="259">→</text><text x="888" y="259">→</text><text x="944" y="259">→</text><text x="1000" y="259">→</text></g>
+  <text x="678" y="306" font-size="17" fill="#356b98">7 个 token：同一时刻的动作分量</text>
+  <rect x="1140" y="184" width="245" height="145" rx="8" fill="#fffefb" stroke="#8ba9c4"/>
+  <text x="1162" y="218" font-size="19" font-weight="600">反量化为连续控制量</text>
+  <text x="1162" y="262" font-size="26" font-family="Georgia,serif">aₜ = [Δx, Δy, …, g]</text>
+  <text x="1162" y="306" font-size="17" fill="#356b98">1 个时刻 · 7 维动作</text>
+  <g fill="none" stroke="#63776e" stroke-width="2.5" marker-end="url(#arrow)"><path d="M264 256H293"/><path d="M618 256H647"/><path d="M1103 256H1132"/></g>
+  <text x="42" y="365" font-size="18" fill="#356b98">x / y / z 表示位移，r 表示转动，g 表示夹爪；7 个 token 对应同一时刻，并非 7 个未来时间步。</text>
+
+  <rect x="20" y="412" width="1400" height="371" rx="12" fill="#eef4ec" stroke="#c7d8ca"/>
+  <text x="42" y="448" font-size="23" font-weight="700" fill="#285641">π0 · 本文方法</text>
+  <rect x="42" y="474" width="215" height="193" rx="8" fill="#fffefb" stroke="#83a38d"/>
+  <g fill="none" stroke="#356b98" stroke-width="2"><rect x="64" y="492" width="45" height="30" rx="3"/><rect x="73" y="484" width="45" height="30" rx="3" fill="#fffefb"/><path d="M78 508L88 496L100 507L110 499"/></g>
+  <text x="64" y="552" font-size="20">2–3 路图像 ＋ 指令</text>
+  <rect x="60" y="572" width="179" height="70" rx="5" fill="#f8f1e5" stroke="#c49d61"/>
+  <text x="74" y="598" font-size="17" fill="#8c642c">增加机器人自身状态</text><text x="74" y="626" font-size="18">qₜ · 例如关节角度</text>
+  <rect x="301" y="474" width="310" height="193" rx="8" fill="#fffefb" stroke="#83a38d" stroke-width="2"/>
+  <text x="325" y="502" font-size="18" font-weight="600">一个 Transformer · 两套权重</text>
+  <rect x="322" y="518" width="268" height="44" rx="5" fill="#edf3f8" stroke="#8ba9c4"/>
+  <text x="456" y="547" text-anchor="middle" font-size="19">图文 → PaliGemma 权重</text>
+  <path d="M345 568V590" stroke="#63776e" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="363" y="584" font-size="16" fill="#617267">动作侧通过自注意力读取</text>
+  <rect x="322" y="599" width="268" height="46" rx="5" fill="#e7f1e6" stroke="#83a38d"/>
+  <text x="456" y="628" text-anchor="middle" font-size="19">状态、动作 → 动作专家</text>
+  <rect x="655" y="474" width="440" height="193" rx="8" fill="#fffefb" stroke="#a88cbc" stroke-width="2"/>
+  <text x="678" y="505" font-size="19" font-weight="600" fill="#78558d">从随机噪声开始，联合修正整块动作</text>
+  <rect x="679" y="528" width="392" height="61" rx="6" fill="#f3edf7" stroke="#b69cc9"/>
+  <text x="875" y="568" font-size="29" text-anchor="middle" font-family="Georgia,serif">A ← A ＋ 0.1 vθ(A, oₜ, τ)</text>
+  <g font-size="19" fill="#78558d" text-anchor="middle"><text x="705" y="622">τ=0</text><text x="786" y="622">0.1</text><text x="869" y="622">…</text><text x="952" y="622">0.9</text><text x="1040" y="622">1</text></g>
+  <g fill="none" stroke="#78558d" stroke-width="2" marker-end="url(#purple-arrow)"><path d="M732 615H758"/><path d="M807 615H839"/><path d="M887 615H920"/><path d="M974 615H1018"/></g>
+  <text x="678" y="650" font-size="16" fill="#617267">每次积分调用动作专家；共 10 次积分</text>
+  <rect x="1140" y="474" width="245" height="193" rx="8" fill="#fffefb" stroke="#a88cbc"/>
+  <text x="1162" y="505" font-size="20" font-weight="600">50 个未来连续动作</text>
+  <g font-size="16" fill="#78558d"><text x="1156" y="538">t</text><text x="1156" y="566">t+1</text><text x="1156" y="594">…</text><text x="1156" y="622">t+49</text></g>
+  <rect x="1214" y="521" width="144" height="22" fill="url(#action-grid)"/><rect x="1214" y="549" width="144" height="22" fill="url(#action-grid)"/><text x="1278" y="594" fill="#78558d">⋮</text><rect x="1214" y="605" width="144" height="22" fill="url(#action-grid)"/>
+  <text x="1162" y="649" font-size="16" fill="#617267">每一行 = 一个未来时刻</text>
+  <g fill="none" stroke="#63776e" stroke-width="2.5" marker-end="url(#arrow)"><path d="M264 568H293"/><path d="M618 568H647"/><path d="M1103 568H1132"/></g>
+  <rect x="42" y="690" width="1343" height="69" rx="6" fill="#fffefb" stroke="#c7d8ca"/>
+  <text x="62" y="718" font-size="19" font-weight="600" fill="#285641">看差异：离散分量 → 连续向量场；单步动作 → 50 步动作块。</text>
+  <text x="62" y="745" font-size="17" fill="#617267">积分期间观测固定，修正的是整块 A；之后执行一部分动作，再获取新观测。</text>
+  <text x="28" y="816" font-size="16" fill="#617267">来源：OpenVLA（2024）Fig. 2、§3.2、§6；π0 PDF 第 5、15–16 页。坐标定义与机器人设置不同，不能据此推算速度或性能倍数。</text>
+</g>
+</svg>
