@@ -16,6 +16,10 @@
 
 ```text
 paper-library/
+├── start-reader.command       双击启动本机阅读与问答
+├── config.example.json        空配置样例
+├── config.json                个人 API key（Git 忽略）
+├── reader/                    选文界面、本机服务与测试
 ├── index.html                 文献总目录
 ├── 2024-pi0/
 │   ├── index.html             中文交互导读
@@ -25,6 +29,28 @@ paper-library/
 ```
 
 每篇论文使用独立文件夹；链接和媒体使用相对路径，复制整库后仍可阅读。
+
+## 选中文字，向 DeepSeek 提问
+
+1. 在根目录的本机 `config.json` 中填写自己的 DeepSeek API key。首次启动会自动创建空配置，也可以先复制 `config.example.json`：
+
+   ```json
+   {
+     "api_key": "在这里填写你自己的 key",
+     "model": "deepseek-flash"
+   }
+   ```
+
+2. 在 macOS Finder 中双击 `start-reader.command`，保持启动的终端窗口开启。它用 Python 3 标准库启动本机阅读服务，并打开 `http://127.0.0.1:8787/`。其他系统可在仓库目录执行 `python3 reader/server.py --open`。
+3. 从总目录进入文章，选中正文，点击浮出的“就这段问 AI”，填写问题或选择快捷问题，再发送。也可使用页面右下方的“问 AI”。
+
+默认会附带当前章节的一部分文字，可取消勾选。提问内容只包含问题、选文、文章标题和选择附带的章节文字，不发送 PDF 或图片。API key 仅由本机服务用于 DeepSeek 身份验证，不暴露给网页。修改配置后重新打开提问面板即可，无需重启服务。
+
+`config.json` 已加入 Git 忽略规则；它由本机服务读取，不提供给网页。GitHub 只保存空的 `config.example.json`。服务只监听 `127.0.0.1`，问题和回答不保存成文件。直接双击 HTML 仍可阅读，AI 问答需使用启动器打开的本机网页。
+
+接口和默认模型依据 [DeepSeek 官方调用文档](https://api-docs.deepseek.com/)（2026-10-25 核对）。如果需要其他 DeepSeek 模型，在个人配置中修改 `model`。
+
+检查本机服务可运行 `python3 -m unittest discover -s reader -v`；测试使用假凭据和模拟响应，不消耗 DeepSeek 额度。
 
 ## 使用 skill
 
