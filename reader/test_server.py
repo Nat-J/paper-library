@@ -46,7 +46,7 @@ class ReaderTests(unittest.TestCase):
         connection = http.client.HTTPConnection('127.0.0.1', self.port, timeout=3)
         headers = {'Host': host or f'127.0.0.1:{self.port}'}
         if body is not None:
-            if isinstance(body, dict):
+            if path == '/api/ask' and isinstance(body, dict):
                 body = {'document': 'index.html', **body}
             headers.update({'Content-Type': 'application/json',
                             'Origin': origin or f'http://127.0.0.1:{self.port}'})
@@ -204,6 +204,37 @@ class ReaderTests(unittest.TestCase):
         with patch.object(server, 'create_note', side_effect=OSError), patch.object(server, 'ask_model') as upstream:
             self.assertEqual(self.request('/api/ask', {'question': 'test'})[0], 500)
             upstream.assert_not_called()
+
+    def test_shutdown_requires_local_origin_and_waits_for_active_answer(self):
+        self.assertEqual(self.request('/api/shutdown', {}, origin='https://example.com')[0], 403)
+        self.assertEqual(self.request('/api/shutdown', {}, origin='null')[0], 403)
+        self.assertEqual(self.request('/api/shutdown')[0], 404)
+        self.assertEqual(self.request('/api/shutdown', {'unexpected': True})[0], 400)
+        server.REQUEST_LOCK.acquire()
+        try:
+            self.assertEqual(self.request('/api/shutdown', {})[0], 409)
+            self.assertFalse(getattr(self.httpd, 'stopping', False))
+        finally:
+            server.REQUEST_LOCK.release()
+        stopped = threading.Event()
+        with patch.object(self.httpd, 'shutdown', side_effect=stopped.set) as stop:
+            status, raw = self.request('/api/shutdown', {})
+            self.assertEqual(status, 200)
+            self.assertTrue(json.loads(raw)['stopped'])
+            self.assertTrue(self.httpd.stopping)
+            self.assertTrue(stopped.wait(timeout=2))
+            stop.assert_called_once()
+            with patch.object(server, 'ask_model') as upstream:
+                self.assertEqual(self.request('/api/ask', {'question':'test'})[0], 503)
+                upstream.assert_not_called()
+
+    def test_library_identity_is_available_even_with_invalid_config(self):
+        self.config.write_text('not JSON')
+        status, raw = self.request('/api/status')
+        data = json.loads(raw)
+        self.assertEqual(status, 200)
+        self.assertEqual(data['library_root'], str(self.root.resolve()))
+        self.assertFalse(data['configured'])
 
 
 if __name__ == '__main__':

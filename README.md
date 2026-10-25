@@ -4,7 +4,9 @@
 
 ## 阅读
 
-下载或克隆整个仓库后，双击根目录的 `index.html` 打开文献总目录，也可以进入论文文件夹，打开其中的 `index.html`。导读主体和已收录媒体可离线阅读，访问作者官网需要网络。
+下载或克隆整个仓库后，macOS 上双击根目录的 **`Paper Library.app`**。它自动在后台启动或复用本机阅读服务，再用默认浏览器打开文献目录，无需保持终端窗口。阅读器使用现有 Python 3，不安装登录启动项。
+
+直接双击根目录或论文文件夹内的 `index.html`，仍可离线阅读导读主体和已收录媒体；问答与个人标记通过阅读器打开后使用。访问作者官网和发送 AI 问题需要网络。
 
 本机保存位置：`~/Documents/paper-library/`，对应 Finder 的“文稿 → paper-library”。GitHub 仓库页面用于查看文件和下载，HTML 导读请下载后在浏览器中打开。
 
@@ -16,7 +18,8 @@
 
 ```text
 paper-library/
-├── start-reader.command       双击启动本机阅读与问答
+├── Paper Library.app          macOS 阅读器入口，自动后台启动
+├── start-reader.command       手动启动的备用入口
 ├── config.example.json        空配置样例
 ├── config.json                个人 API key（Git 忽略）
 ├── .reader-data/              个人提问与回答（Git 忽略）
@@ -43,8 +46,14 @@ paper-library/
    }
    ```
 
-2. 在 macOS Finder 中双击 `start-reader.command`，保持启动的终端窗口开启。它用 Python 3 标准库启动本机阅读服务，并打开 `http://127.0.0.1:8787/`。其他系统可在仓库目录执行 `python3 reader/server.py --open`。
+2. 在 macOS Finder 中双击 **`Paper Library.app`**。它打开 `http://127.0.0.1:8787/`，已有同一文献库的服务时直接复用，不会反复启动进程。请将应用留在文献库根目录；移动或备份时复制整个文献库。其他系统可在仓库目录执行 `python3 reader/server.py --open`。
 3. 从总目录进入文章，选中正文，点击浮出的“就这段问 AI”，填写问题或选择快捷问题，再发送。也可使用页面右下方的“问 AI”。
+
+关闭网页后，服务继续在后台运行。需要停止时，点击文献目录底部的“退出阅读服务”，或文章“问 AI”面板底部的同名按钮；正在生成回答时会等待你在回答完成后再次退出。再次双击应用即可恢复。服务的启动日志位于被 Git 忽略的 `.reader-data/reader.log`。
+
+应用由 macOS 自带 AppleScript 工具生成，源码为 `reader/launcher.applescript`，后台启动逻辑在 `reader/launcher.py`。修改启动器源码后可在 macOS 上运行 `python3 reader/build-app.py` 重建应用。应用依赖本机 `/usr/bin/python3`；本仓库不打包 Python 运行时。
+
+应用使用本机签名，未做 Apple 公证；在另一台 Mac 上下载后可能出现系统验证提示。可在那台电脑上从上述源码重新构建。
 
 默认配置使用 DeepSeek，也支持其他提供 **OpenAI 兼容 Chat Completions 接口**的服务：修改 `base_url`、`model`、`api_key` 即可。例如 `base_url` 为 `https://服务域名/v1` 时，请求发送至其 `/v1/chat/completions`；也可填写完整的 `/chat/completions` 地址。远程接口使用 HTTPS，本机接口支持 HTTP 和空 key。其他协议的接口不在此兼容范围内。
 

@@ -228,13 +228,13 @@ class ReaderHandler(SimpleHTTPRequestHandler):
             return
         path = unquote(urlsplit(self.path).path)
         if path == '/api/status':
+            info = {'app': 'paper-library-reader', 'library_root': str(LIBRARY_ROOT.resolve())}
             try:
                 config = load_config()
-                self.send_json(200, {'app': 'paper-library-reader',
+                self.send_json(200, {**info,
                                     **{name: config[name] for name in ('configured', 'model', 'provider')}})
             except ReaderError as error:
-                self.send_json(200, {'app': 'paper-library-reader',
-                                    'configured': False, 'error': str(error)})
+                self.send_json(200, {**info, 'configured': False, 'error': str(error)})
             return
         if path == '/api/notes':
             try:
@@ -270,7 +270,8 @@ class ReaderHandler(SimpleHTTPRequestHandler):
         if not self.valid_host() or self.headers.get('Origin') != origin:
             self.send_json(403, {'error': '仅接受本机阅读页发起的请求。'})
             return
-        if urlsplit(self.path).path != '/api/ask':
+        path = urlsplit(self.path).path
+        if path not in ('/api/ask', '/api/shutdown'):
             self.send_json(404, {'error': '未找到此接口。'})
             return
         if self.headers.get_content_type() != 'application/json':
@@ -281,7 +282,21 @@ class ReaderHandler(SimpleHTTPRequestHandler):
             if not 0 < length <= 100_000:
                 self.send_json(413, {'error': '问题内容过长。'})
                 return
-            data = validate_question(json.loads(self.rfile.read(length)))
+            body = json.loads(self.rfile.read(length))
+            if path == '/api/shutdown':
+                if body != {}:
+                    raise ReaderError('退出请求格式不正确。')
+                if not REQUEST_LOCK.acquire(blocking=False):
+                    self.send_json(409, {'error': '还有问题正在回答，请等待完成后再退出。'})
+                    return
+                try:
+                    self.server.stopping = True
+                    self.send_json(200, {'stopped': True})
+                    threading.Thread(target=self.server.shutdown, daemon=True).start()
+                finally:
+                    REQUEST_LOCK.release()
+                return
+            data = validate_question(body)
             config = load_config()
             if not config['configured']:
                 self.send_json(503, {'error': '请在本机 config.json 中填写 API key，再重试。'})
@@ -294,6 +309,9 @@ class ReaderHandler(SimpleHTTPRequestHandler):
             self.send_json(429, {'error': '还有一条问题正在处理，请稍后重试。'})
             return
         try:
+            if getattr(self.server, 'stopping', False):
+                self.send_json(503, {'error': '阅读服务正在退出，请重新打开 Paper Library.app。'})
+                return
             try:
                 note_id = create_note(data, config)
             except (OSError, sqlite3.Error):
@@ -343,7 +361,8 @@ def main():
             try:
                 with urlopen(address + 'api/status', timeout=2) as response:
                     existing = json.load(response)
-                if existing.get('app') == 'paper-library-reader':
+                if (existing.get('app') == 'paper-library-reader'
+                        and existing.get('library_root') == str(LIBRARY_ROOT.resolve())):
                     if args.open:
                         webbrowser.open(address)
                     print('阅读服务已在运行：' + address)

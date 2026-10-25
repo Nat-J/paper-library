@@ -220,7 +220,7 @@
 
   async function loadNotes() {
     const message = shell.querySelector('.rai-history-status');
-    if (!local) { message.textContent = '请用 start-reader.command 打开本机阅读页，以查看个人提问记录。'; return; }
+    if (!local) { message.textContent = '请双击 Paper Library.app 打开文献库，以查看个人提问记录。'; return; }
     try {
       const response = await fetch(`/api/notes?document=${encodeURIComponent(documentKey)}`, {cache:'no-store'});
       const data = await response.json();
@@ -270,7 +270,7 @@
   async function checkConnection() {
     if (!local) {
       send.disabled = true;
-      setStatus('问答和个人标记需从本机服务打开：在 paper-library 文件夹中双击 start-reader.command。API key 填在 config.json。');
+      setStatus('请在 paper-library 文件夹中双击 Paper Library.app，阅读器会自动开启问答和个人标记。API key 填在 config.json。');
       return;
     }
     try {
@@ -281,7 +281,7 @@
       setStatus(data.configured ? `已连接 · ${data.provider} / ${data.model}` : data.error || '请在本机 config.json 中填写 API key，填好后重新打开此面板。已保存的问答仍可在本页记录中查看。', !data.configured);
     } catch {
       send.disabled = true;
-      setStatus('本机阅读服务未连接，请重新运行 start-reader.command。', true);
+      setStatus('本机阅读服务未连接，请重新打开 Paper Library.app。', true);
     }
   }
 
@@ -330,6 +330,10 @@
     showView(button.dataset.view);
   }));
   loadNotes();
+  addEventListener('reader-service-stopped', () => {
+    send.disabled = true;
+    setStatus('阅读服务已退出。双击 Paper Library.app 可重新开启。');
+  });
   shell.querySelectorAll('.rai-presets button').forEach(button => button.addEventListener('click', () => {
     question.value = button.textContent === '逐步解释公式'
       ? '请逐步解释这段公式：每个变量从哪来、算了什么，再用一组具体数字演示。'
