@@ -1,6 +1,7 @@
 import http.client
 import io
 import json
+import os
 from pathlib import Path
 import tempfile
 import threading
@@ -10,6 +11,7 @@ from urllib.error import HTTPError
 from urllib.parse import quote
 
 import server
+import paper_import
 
 
 class ReaderTests(unittest.TestCase):
@@ -88,6 +90,13 @@ class ReaderTests(unittest.TestCase):
         self.assertTrue(json.loads(raw)['configured'])
         self.assertNotIn(self.key, raw.decode())
         self.assertNotIn('api_key', json.loads(raw))
+
+    def test_html_keeps_background_connections_on_reader_origin(self):
+        connection=http.client.HTTPConnection('127.0.0.1',self.port,timeout=3)
+        connection.request('GET','/')
+        response=connection.getresponse()
+        self.assertIn("connect-src 'self'",response.getheader('Content-Security-Policy'))
+        response.read(); connection.close()
 
     def test_foreign_origin_file_origin_and_host_are_rejected(self):
         with patch.object(server, 'urlopen') as upstream:
@@ -235,6 +244,37 @@ class ReaderTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(data['library_root'], str(self.root.resolve()))
         self.assertFalse(data['configured'])
+
+    def test_pdf_upload_status_and_shutdown_protection(self):
+        skill = self.root / 'skills/paper-to-web'; skill.mkdir(parents=True)
+        (skill / 'SKILL.md').write_text('test skill')
+        pdf = b'%PDF-1.4\nfixture\n%%EOF'
+        held = []
+        def keep_worker_lock(manager, job, descriptor, sync_only=False):
+            held.append(os.dup(descriptor))
+        def upload(origin, data=pdf, content_type='application/pdf'):
+            connection=http.client.HTTPConnection('127.0.0.1',self.port,timeout=3)
+            connection.request('POST','/api/imports',data,{'Content-Type':content_type,
+                'Origin':origin,'X-PDF-Name':'test.pdf'})
+            response=connection.getresponse(); result=response.status,response.read(); connection.close()
+            return result
+        origin=f'http://127.0.0.1:{self.port}'
+        try:
+            with patch.object(paper_import,'find_codex',return_value='/bin/false'), \
+                    patch.object(paper_import.ImportManager,'start_worker',keep_worker_lock):
+                self.assertEqual(upload('https://example.com')[0],403)
+                self.assertEqual(upload(origin,content_type='text/plain')[0],415)
+                self.assertEqual(upload(origin,data=b'bad!!')[0],400)
+                status,raw=upload(origin)
+                self.assertEqual(status,202)
+                job=json.loads(raw)['job']; self.assertEqual(job['stage'],'queued')
+                state=json.loads(self.request('/api/imports')[1]); self.assertTrue(state['busy'])
+                self.assertNotIn(self.key,json.dumps(state))
+                self.assertEqual(self.request('/api/shutdown',{})[0],409)
+                self.assertEqual(self.request('/.reader-data/imports/'+job['id']+'/input.pdf')[0],404)
+                self.assertEqual(self.request('/api/imports/../config.json/retry',{})[0],400)
+        finally:
+            for descriptor in held: os.close(descriptor)
 
 
 if __name__ == '__main__':

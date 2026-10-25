@@ -18,6 +18,7 @@ class LauncherTests(unittest.TestCase):
             root = Path(directory) / "a reader's library"
             (root / 'reader').mkdir(parents=True)
             shutil.copyfile(Path(__file__).with_name('server.py'), root / 'reader/server.py')
+            shutil.copyfile(Path(__file__).with_name('paper_import.py'), root / 'reader/paper_import.py')
             (root / 'index.html').write_text('<h1>Test library</h1>')
             with socket.socket() as reservation:
                 reservation.bind(('127.0.0.1', 0))

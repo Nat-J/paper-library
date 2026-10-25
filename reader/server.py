@@ -17,6 +17,8 @@ from urllib.request import Request, urlopen
 import webbrowser
 from uuid import uuid4
 
+from paper_import import ImportManager, ImportErrorMessage, MAX_PDF
+
 LIBRARY_ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = LIBRARY_ROOT / 'config.json'
 HISTORY_PATH = LIBRARY_ROOT / '.reader-data' / 'questions.sqlite3'
@@ -220,6 +222,10 @@ class ReaderHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header('X-Frame-Options', 'DENY')
+        self.send_header('Content-Security-Policy',
+            "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; font-src 'self' data:; media-src 'self'; connect-src 'self'; "
+            "object-src 'none'; base-uri 'self'; form-action 'none'")
         super().end_headers()
 
     def do_GET(self):
@@ -227,6 +233,12 @@ class ReaderHandler(SimpleHTTPRequestHandler):
             self.send_error(403)
             return
         path = unquote(urlsplit(self.path).path)
+        if path == '/api/imports':
+            try:
+                self.send_json(200, ImportManager(LIBRARY_ROOT).status())
+            except (OSError, ValueError):
+                self.send_json(500, {'error':'无法读取本机导入记录，请检查文献库目录权限。'})
+            return
         if path == '/api/status':
             info = {'app': 'paper-library-reader', 'library_root': str(LIBRARY_ROOT.resolve())}
             try:
@@ -271,7 +283,26 @@ class ReaderHandler(SimpleHTTPRequestHandler):
             self.send_json(403, {'error': '仅接受本机阅读页发起的请求。'})
             return
         path = urlsplit(self.path).path
-        if path not in ('/api/ask', '/api/shutdown'):
+        retry_import = path.startswith('/api/imports/') and path.endswith('/retry')
+        if path == '/api/imports':
+            if self.headers.get_content_type() != 'application/pdf':
+                self.send_json(415, {'error':'请上传 PDF 文件。'})
+                return
+            try:
+                length = int(self.headers.get('Content-Length','0'))
+                if not 5 <= length <= MAX_PDF:
+                    self.send_json(413, {'error':'请选择一篇不超过 50 MB 的 PDF。'})
+                    return
+                self.connection.settimeout(60)
+                name = unquote(self.headers.get('X-PDF-Name','paper.pdf'))
+                job = ImportManager(LIBRARY_ROOT).upload(self.rfile,length,name)
+                self.send_json(202, {'job':job})
+            except ImportErrorMessage as error:
+                self.send_json(400, {'error':str(error)})
+            except (OSError, ValueError):
+                self.send_json(500, {'error':'PDF 未能保存，请检查文件和目录权限后重试。'})
+            return
+        if path not in ('/api/ask', '/api/shutdown') and not retry_import:
             self.send_json(404, {'error': '未找到此接口。'})
             return
         if self.headers.get_content_type() != 'application/json':
@@ -283,9 +314,24 @@ class ReaderHandler(SimpleHTTPRequestHandler):
                 self.send_json(413, {'error': '问题内容过长。'})
                 return
             body = json.loads(self.rfile.read(length))
+            if retry_import:
+                if body != {}:
+                    raise ReaderError('重试请求格式不正确。')
+                job_id = path[len('/api/imports/'):-len('/retry')]
+                try:
+                    job = ImportManager(LIBRARY_ROOT).retry(job_id)
+                    self.send_json(202, {'job':job})
+                except ImportErrorMessage as error:
+                    self.send_json(400, {'error':str(error)})
+                except OSError:
+                    self.send_json(500, {'error':'导入任务未能重新启动，请稍后重试。'})
+                return
             if path == '/api/shutdown':
                 if body != {}:
                     raise ReaderError('退出请求格式不正确。')
+                if ImportManager(LIBRARY_ROOT).busy():
+                    self.send_json(409, {'error':'论文正在生成或同步，请等待导入完成后再退出。'})
+                    return
                 if not REQUEST_LOCK.acquire(blocking=False):
                     self.send_json(409, {'error': '还有问题正在回答，请等待完成后再退出。'})
                     return

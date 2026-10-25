@@ -1,4 +1,7 @@
 (async () => {
+  const importer = document.createElement('script');
+  importer.src = new URL('reader-import.js', document.currentScript.src).href;
+  document.head.append(importer);
   if (location.protocol !== 'http:' || !['127.0.0.1','localhost'].includes(location.hostname)) return;
   try {
     const response = await fetch('/api/status', {cache:'no-store'});
