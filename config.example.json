@@ -1,5 +1,15 @@
 {
-  "base_url": "https://api.deepseek.com",
-  "api_key": "",
-  "model": "deepseek-flash"
+  "active_profile": "deepseek",
+  "profiles": {
+    "deepseek": {
+      "base_url": "https://api.deepseek.com",
+      "api_key": "",
+      "model": "deepseek-flash"
+    },
+    "codex": {
+      "base_url": "https://你的 OpenAI 兼容接口/v1",
+      "api_key": "",
+      "model": "填写该接口支持的模型"
+    }
+  }
 }

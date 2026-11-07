@@ -48,6 +48,8 @@ paper-library/
 
 本机需有可用的 PDF 文字提取与渲染工具；阅读器复用内置 Python PDF 库和 Poppler，不安装本地 agent，也不调用 Codex 账户。接口返回异常、额度不足或模型不支持时，任务会报错并保留 PDF，切换 `model` 后可重试。
 
+DeepSeek API 本身不负责直接生图；导入器默认用 SVG/CSS 教学图和 PDF 原图。若你要使用 DeepSeek Harness 的工具生图，需要把 Harness 暴露成一个可调用的 OpenAI 兼容接口后，再给它配置一个 profile；阅读器不会假定或伪造 Harness 工具调用。
+
 各篇导读的 `SOURCES.md` 会记录事实来源和未完成的核对项。自动检查覆盖文件、链接、PDF 一致性及归档同步；不等于核实论文全部事实或实验结论。
 
 ## 选文提问与本地小钉子
@@ -56,9 +58,19 @@ paper-library/
 
    ```json
    {
-     "base_url": "https://api.deepseek.com",
-     "api_key": "在这里填写你自己的 key",
-     "model": "deepseek-flash"
+     "active_profile": "deepseek",
+     "profiles": {
+       "deepseek": {
+         "base_url": "https://api.deepseek.com",
+         "api_key": "在这里填写你自己的 key",
+         "model": "deepseek-flash"
+       },
+       "codex": {
+         "base_url": "https://你的 OpenAI 兼容接口/v1",
+         "api_key": "",
+         "model": "填写该接口支持的模型"
+       }
+     }
    }
    ```
 
@@ -71,7 +83,7 @@ paper-library/
 
 应用使用本机签名，未做 Apple 公证；在另一台 Mac 上下载后可能出现系统验证提示。可在那台电脑上从上述源码重新构建。
 
-默认配置使用 DeepSeek，也支持其他提供 **OpenAI 兼容 Chat Completions 接口**的服务：修改 `base_url`、`model`、`api_key` 即可。例如 `base_url` 为 `https://服务域名/v1` 时，请求发送至其 `/v1/chat/completions`；也可填写完整的 `/chat/completions` 地址。远程接口使用 HTTPS，本机接口支持 HTTP 和空 key。其他协议的接口不在此兼容范围内。
+默认配置使用 DeepSeek，也支持其他提供 **OpenAI 兼容 Chat Completions 接口**的服务：修改 `base_url`、`model`、`api_key` 即可。若配置了 `profiles`，导入面板顶部可以快速切换档案；切换后导入和选文问答都会使用该档案。这里的 `codex` 档案表示你自己提供的兼容 API 地址和 key；本地 Codex 登录状态不会自动变成一个可供网页调用的 API。远程接口使用 HTTPS，本机接口支持 HTTP 和空 key。其他协议的接口不在此兼容范围内。
 
 默认会附带当前章节的一部分文字，可取消勾选。提问内容只包含问题、选文、文章标题和选择附带的章节文字，不发送 PDF 或图片。API key 仅由本机服务用于接口身份验证，不暴露给网页。修改配置后重新打开提问面板即可，无需重启服务；原有不含 `base_url` 的配置仍默认使用 DeepSeek。
 

@@ -17,7 +17,7 @@ from urllib.request import Request, urlopen
 import webbrowser
 from uuid import uuid4
 
-from paper_import import ImportManager, ImportErrorMessage, MAX_PDF
+from paper_import import ImportManager, ImportErrorMessage, MAX_PDF, load_api_config, list_api_profiles, set_api_profile
 
 LIBRARY_ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = LIBRARY_ROOT / 'config.json'
@@ -45,34 +45,9 @@ class ReaderError(ValueError):
 
 def load_config():
     try:
-        config = json.loads(CONFIG_PATH.read_text(encoding='utf-8'))
-    except (OSError, ValueError):
-        raise ReaderError('请检查本机 config.json 是否存在且为有效 JSON。') from None
-    if not isinstance(config, dict):
-        raise ReaderError('config.json 必须是 JSON 对象。')
-    key = config.get('api_key', '')
-    model = config.get('model', DEFAULTS['model'])
-    if not isinstance(key, str) or '\n' in key or '\r' in key:
-        raise ReaderError('config.json 中的 api_key 格式不正确。')
-    if not isinstance(model, str) or not model.strip() or len(model) > 100:
-        raise ReaderError('请在 config.json 中填写有效的 model。')
-    base = config.get('base_url', DEFAULTS['base_url'])
-    if not isinstance(base, str):
-        raise ReaderError('base_url 需要填写兼容 Chat Completions 的 API 地址。')
-    base = base.strip().rstrip('/')
-    try:
-        url = urlsplit(base)
-        valid = (url.scheme in ('https', 'http') and url.hostname
-                 and not url.username and not url.password and not url.query and not url.fragment)
-        local = url.hostname in ('127.0.0.1', 'localhost', '::1')
-        if not valid or (url.scheme == 'http' and not local):
-            raise ValueError
-        url.port
-    except ValueError:
-        raise ReaderError('base_url 请使用 HTTPS；本机接口可使用 HTTP。地址不能包含用户名、密码或查询参数。') from None
-    endpoint = base if url.path.endswith('/chat/completions') else base + '/chat/completions'
-    return {'api_key': key.strip(), 'model': model.strip(), 'endpoint': endpoint,
-            'provider': url.hostname, 'configured': bool(key.strip()) or local}
+        return load_api_config(LIBRARY_ROOT)
+    except ImportErrorMessage as error:
+        raise ReaderError(str(error)) from None
 
 
 def validate_document(value):
@@ -239,6 +214,12 @@ class ReaderHandler(SimpleHTTPRequestHandler):
             except (OSError, ValueError):
                 self.send_json(500, {'error':'无法读取本机导入记录，请检查文献库目录权限。'})
             return
+        if path == '/api/config':
+            try:
+                self.send_json(200, list_api_profiles(LIBRARY_ROOT))
+            except ImportErrorMessage as error:
+                self.send_json(200, {'active_profile':'', 'profiles':[], 'error':str(error)})
+            return
         if path == '/api/status':
             info = {'app': 'paper-library-reader', 'library_root': str(LIBRARY_ROOT.resolve())}
             try:
@@ -301,6 +282,19 @@ class ReaderHandler(SimpleHTTPRequestHandler):
                 self.send_json(400, {'error':str(error)})
             except (OSError, ValueError):
                 self.send_json(500, {'error':'PDF 未能保存，请检查文件和目录权限后重试。'})
+            return
+        if path == '/api/config':
+            try:
+                length = int(self.headers.get('Content-Length','0'))
+                if not 0 < length <= 10_000:
+                    self.send_json(413, {'error':'配置请求格式不正确。'}); return
+                body = json.loads(self.rfile.read(length))
+                config = set_api_profile(LIBRARY_ROOT, body.get('profile') if isinstance(body,dict) else None)
+                self.send_json(200, {'profile':config['profile'],'model':config['model'],'provider':config['provider']})
+            except ImportErrorMessage as error:
+                self.send_json(400, {'error':str(error)})
+            except (ValueError, UnicodeError, OSError):
+                self.send_json(400, {'error':'模型配置切换失败，请检查 config.json。'})
             return
         if path not in ('/api/ask', '/api/shutdown') and not retry_import:
             self.send_json(404, {'error': '未找到此接口。'})

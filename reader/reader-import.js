@@ -5,7 +5,7 @@
   const style = document.createElement('style');
   style.textContent = `
     .rimp-box{margin:0 0 32px;padding:20px 24px;border:1px dashed #7e9a87;border-radius:12px;background:var(--paper,#fffefb);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.rimp-box strong{display:block;font-size:16px}.rimp-box p{margin:4px 0 0;color:var(--muted,#617267);font-size:13px}.rimp-box button,.rimp-choose{font:inherit;border:0;border-radius:6px;padding:9px 16px;background:#285641;color:#fffefb;cursor:pointer}.rimp-trigger{position:fixed;right:24px;bottom:160px;z-index:110;border:1px solid #7e9a87;border-radius:24px;background:var(--paper,#fffefb);color:var(--green,#285641);padding:9px 16px;font:14px/1.5 -apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;cursor:pointer;box-shadow:0 4px 20px #0001}
-    #reader-import-panel{width:min(680px,calc(100vw - 28px));max-height:calc(100dvh - 40px);border:1px solid var(--line,#d8e1d7);border-radius:14px;padding:0;background:var(--paper,#fffefb);color:var(--ink,#233b30);font:14px/1.8 -apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;box-shadow:0 14px 60px #0003;overflow:auto}#reader-import-panel::backdrop{background:#10201866}#reader-import-panel *{box-sizing:border-box}#reader-import-panel header{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid var(--line,#d8e1d7)}#reader-import-panel h2{font-size:19px;margin:0}.rimp-close{background:none;border:0;font-size:28px;color:inherit;padding:4px 8px;cursor:pointer}.rimp-body{padding:20px 22px}.rimp-drop{padding:26px 18px;border:2px dashed #7e9a87;border-radius:9px;background:var(--pale,#eef4ec);text-align:center}.rimp-drop p{margin:0 0 12px}.rimp-drop.dragging{border-color:#285641;background:#dce9dc}.rimp-note,.rimp-meta{font-size:12px;color:var(--muted,#617267);margin:10px 0;line-height:1.75}.rimp-status{min-height:1.8em;margin:12px 0;white-space:pre-wrap}.rimp-status[data-error=true]{color:#a04d4a}.rimp-job{border:1px solid var(--line,#d8e1d7);border-radius:8px;padding:12px 15px;margin:12px 0;overflow-wrap:anywhere}.rimp-job strong{display:block}.rimp-job p{margin:5px 0}.rimp-job a{color:var(--green,#285641);text-underline-offset:3px}.rimp-retry{margin-left:14px;background:none;color:inherit;border:1px solid var(--line,#d8e1d7);border-radius:5px;font:inherit;font-size:12px;padding:4px 9px;cursor:pointer}#reader-import-panel button:focus-visible,.rimp-trigger:focus-visible,.rimp-box button:focus-visible{outline:3px solid #a77c42;outline-offset:3px}#reader-import-panel button:disabled{opacity:.5;cursor:default}@media(max-width:600px){.rimp-trigger{right:16px;bottom:151px}.rimp-box{padding:18px}.rimp-body{padding:16px}}@media print{.rimp-box,.rimp-trigger,#reader-import-panel{display:none!important}}
+    #reader-import-panel{width:min(680px,calc(100vw - 28px));max-height:calc(100dvh - 40px);border:1px solid var(--line,#d8e1d7);border-radius:14px;padding:0;background:var(--paper,#fffefb);color:var(--ink,#233b30);font:14px/1.8 -apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;box-shadow:0 14px 60px #0003;overflow:auto}#reader-import-panel::backdrop{background:#10201866}#reader-import-panel *{box-sizing:border-box}#reader-import-panel header{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid var(--line,#d8e1d7)}#reader-import-panel h2{font-size:19px;margin:0}.rimp-close{background:none;border:0;font-size:28px;color:inherit;padding:4px 8px;cursor:pointer}.rimp-body{padding:20px 22px}.rimp-drop{padding:26px 18px;border:2px dashed #7e9a87;border-radius:9px;background:var(--pale,#eef4ec);text-align:center}.rimp-drop p{margin:0 0 12px}.rimp-drop.dragging{border-color:#285641;background:#dce9dc}.rimp-note,.rimp-meta{font-size:12px;color:var(--muted,#617267);margin:10px 0;line-height:1.75}.rimp-model{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0;padding:10px 12px;border:1px solid var(--line,#d8e1d7);border-radius:7px;font-size:13px}.rimp-model select{max-width:260px;border:1px solid var(--line,#d8e1d7);border-radius:5px;background:var(--paper,#fffefb);color:inherit;padding:5px 8px;font:inherit}.rimp-status{min-height:1.8em;margin:12px 0;white-space:pre-wrap}.rimp-status[data-error=true]{color:#a04d4a}.rimp-job{border:1px solid var(--line,#d8e1d7);border-radius:8px;padding:12px 15px;margin:12px 0;overflow-wrap:anywhere}.rimp-job strong{display:block}.rimp-job p{margin:5px 0}.rimp-job a{color:var(--green,#285641);text-underline-offset:3px}.rimp-retry{margin-left:14px;background:none;color:inherit;border:1px solid var(--line,#d8e1d7);border-radius:5px;font:inherit;font-size:12px;padding:4px 9px;cursor:pointer}#reader-import-panel button:focus-visible,.rimp-trigger:focus-visible,.rimp-box button:focus-visible{outline:3px solid #a77c42;outline-offset:3px}#reader-import-panel button:disabled,.rimp-model select:disabled{opacity:.5;cursor:default}@media(max-width:600px){.rimp-trigger{right:16px;bottom:151px}.rimp-box{padding:18px}.rimp-body{padding:16px}}@media print{.rimp-box,.rimp-trigger,#reader-import-panel{display:none!important}}
   `;
   document.head.append(style);
   const shell = document.createElement('div');
@@ -15,6 +15,7 @@
       <header><h2 id="reader-import-heading">导入 PDF，生成中文导读</h2><button class="rimp-close" type="button" aria-label="关闭导入面板">×</button></header>
       <div class="rimp-body"><div class="rimp-drop"><p><strong>把 PDF 拖到这里，或拖入阅读页面</strong><br>按 paper-to-web skill 生成，归档后更新文献目录</p><button class="rimp-choose" type="button">选择 PDF</button><p class="rimp-meta">每次一篇 · 最大 50 MB</p></div>
       <p class="rimp-note">导入和页面问答都使用 config.json 里的 API key 与 model。切换 model 后下一次导入就使用新模型；完成后会将原 PDF、导读和媒体同步到当前 GitHub 仓库（public）。</p>
+      <div class="rimp-model"><label for="reader-import-profile">本次生成使用：</label><select id="reader-import-profile" class="rimp-profile"></select><span class="rimp-model-note"></span></div>
       <p class="rimp-note">生成可能需要数分钟。关闭此面板后任务继续，电脑需保持开机和联网。</p>
       <p class="rimp-status" role="status" aria-live="polite"></p><div class="rimp-jobs" aria-label="导入记录"></div></div>
     </dialog>`;
@@ -24,9 +25,27 @@
   const choose = shell.querySelector('.rimp-choose');
   const drop = shell.querySelector('.rimp-drop');
   const status = shell.querySelector('.rimp-status');
+  const profileSelect = shell.querySelector('.rimp-profile');
+  const profileNote = shell.querySelector('.rimp-model-note');
   let uploading = false, busy = false, available = false, polling = null, opener = null;
   const completed = new Set();
   function message(text,error=false) { status.textContent=text; status.dataset.error=String(error); }
+  async function loadProfiles() {
+    if(!local) return;
+    try {
+      const response=await fetch('/api/config',{cache:'no-store'}); const data=await response.json();
+      if(!response.ok || !Array.isArray(data.profiles)) throw new Error(data.error || '无法读取模型配置。');
+      profileSelect.replaceChildren();
+      for(const item of data.profiles) {
+        const option=document.createElement('option'); option.value=item.id;
+        option.textContent=`${item.id} · ${item.provider || '未配置'} / ${item.model || '未填写'}`;
+        option.disabled=!item.configured; profileSelect.append(option);
+      }
+      if(data.active_profile) profileSelect.value=data.active_profile;
+      const active=data.profiles.find(item=>item.id===data.active_profile);
+      profileNote.textContent=active && !active.configured ? '该配置缺少 API key' : '切换后新导入和新提问都会使用它';
+    } catch(error) { profileNote.textContent=error.message || '模型配置读取失败'; }
+  }
   function openPanel() {
     opener = document.activeElement;
     if (!panel.open) panel.showModal();
@@ -48,6 +67,16 @@
     shell.append(trigger);
   }
   choose.addEventListener('click',()=>fileInput.click());
+  profileSelect.addEventListener('change',async()=>{
+    profileSelect.disabled=true;
+    try {
+      const response=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile:profileSelect.value})});
+      const data=await response.json(); if(!response.ok) throw new Error(data.error || '模型切换失败。');
+      profileNote.textContent=`已切换到 ${data.provider} / ${data.model}`;
+      await loadJobs();
+    } catch(error) { message(error.message || '模型切换失败。',true); await loadProfiles(); }
+    finally { profileSelect.disabled=busy || uploading; }
+  });
   fileInput.addEventListener('change',()=>{ if(fileInput.files.length) importFiles([...fileInput.files]); fileInput.value=''; });
   document.addEventListener('dragover',event=>{
     if([...event.dataTransfer.types].includes('Files')) { event.preventDefault(); drop.classList.add('dragging'); }
@@ -105,6 +134,7 @@
       const data=await response.json(); if(!response.ok) throw new Error(data.error);
       available=data.available; busy=data.busy;
       choose.disabled=!available || busy || uploading;
+      profileSelect.disabled=busy || uploading;
       if(!available) message(data.reason,true);
       else if(busy && !uploading) message('论文正在后台处理，完成后会显示打开导读的入口。');
       else if(!uploading && status.dataset.error!=='true') message(`拖入 PDF 即开始生成并自动归档、同步 · ${data.provider || ''} / ${data.model || ''}`);
@@ -131,5 +161,5 @@
     } catch(error) { message(error.message || '导入未成功，请重新拖入。',true); }
     finally { uploading=false; await loadJobs(); }
   }
-  if(local) loadJobs(); else choose.disabled=true;
+  if(local) { loadProfiles(); loadJobs(); } else { choose.disabled=true; profileSelect.disabled=true; }
 })();

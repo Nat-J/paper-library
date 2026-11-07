@@ -98,6 +98,24 @@ class ReaderTests(unittest.TestCase):
         self.assertIn("connect-src 'self'",response.getheader('Content-Security-Policy'))
         response.read(); connection.close()
 
+    def test_model_profiles_can_switch_without_exposing_keys(self):
+        second = 'SECOND-PRIVATE-KEY'
+        self.config.write_text(json.dumps({'active_profile':'deepseek','profiles':{
+            'deepseek':{'base_url':'https://api.deepseek.com','api_key':self.key,'model':'deepseek-flash'},
+            'codex':{'base_url':'https://example.com/v1','api_key':second,'model':'codex-model'}}}))
+        status, raw = self.request('/api/config')
+        data = json.loads(raw)
+        self.assertEqual(status, 200)
+        self.assertEqual(data['active_profile'],'deepseek')
+        self.assertEqual({item['id'] for item in data['profiles']},{'deepseek','codex'})
+        self.assertNotIn(self.key, raw.decode()); self.assertNotIn(second, raw.decode())
+        status, raw = self.request('/api/config', {'profile':'codex'})
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(raw)['model'],'codex-model')
+        self.assertEqual(json.loads(self.config.read_text())['active_profile'],'codex')
+        self.assertEqual(json.loads(self.request('/api/status')[1])['model'],'codex-model')
+        self.assertNotIn(second, raw.decode())
+
     def test_foreign_origin_file_origin_and_host_are_rejected(self):
         with patch.object(server, 'urlopen') as upstream:
             for origin in ['https://example.com', 'null']:
