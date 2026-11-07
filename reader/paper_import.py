@@ -286,6 +286,13 @@ def generate(manager, job):
     pages,text=extract_pdf_pages(pdf,workspace)
     output=workspace/'output'; (output/'assets').mkdir(parents=True)
     shutil.copyfile(pdf,output/'assets/paper.pdf')
+    # The generated page uses the same relative paths it will have after archiving.
+    # Mirror those neighbours while the static checker runs inside workspace/output.
+    shutil.copyfile(manager.root/'index.html',workspace/'index.html')
+    reader_dir=workspace/'reader'; reader_dir.mkdir()
+    for shared in ('reader-ai.js','reader-service.js','reader-import.js'):
+        source=manager.root/'reader'/shared
+        if source.is_file(): shutil.copyfile(source,reader_dir/shared)
     page_assets=render_pdf_pages(pdf,output,len(pages))
     skill_parts=[]
     for relative in ['SKILL.md','references/editorial.md','references/visual-system.md','references/reference-audit.md']:
@@ -380,7 +387,7 @@ def validate_output(manager, job, output, metadata):
                             capture_output=True, timeout=30)
     if result.returncode:
         raise ImportErrorMessage('导读的本地资源或章节链接检查未通过，可重新生成。')
-    folder = (str(year) + '-' if year else '') + slug
+    folder = slug if year and slug.startswith(str(year) + '-') else ((str(year) + '-' if year else '') + slug)
     if (manager.root / folder).exists():
         folder += '-' + job['sha256'][:8]
     if (manager.root / folder).exists():
