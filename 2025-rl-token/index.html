@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RL Token 导读 · 用 VLA 表示做样本高效的在线 RL</title>
+<style>
+:root{
+--page:#f3f6f2;--surface:#fffefb;--ink:#233b30;--muted:#617267;--primary:#285641;--accent:#a77c42;
+--blue:#3a6ea5;--gold:#a77c42;--cyan:#2c8f8f;--violet:#5b57a6;--green:#2f7d51;--purple:#7d4a9c;--red:#b0433a;
+--line:rgba(35,59,48,.16);--panel:rgba(40,86,65,.05);--shade:rgba(0,0,0,.035);
+--radius:8px;--font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+--serif:Georgia,"Songti SC","Noto Serif SC",serif;
+}
+html[data-theme="night"]{
+--page:#101b18;--surface:#282518;--ink:#dce6df;--muted:#b1c0b6;--primary:#a4cfb9;--accent:#d4b481;
+--blue:#7aa9d6;--gold:#d4b481;--cyan:#6fc7c2;--violet:#a3a0e0;--green:#8fceaa;--purple:#c79bdd;--red:#e08a80;
+--line:rgba(220,230,223,.18);--panel:rgba(164,207,185,.07);--shade:rgba(255,255,255,.04);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--font);font-size:16.5px;line-height:1.9;-webkit-font-smoothing:antialiased}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:60}
+.topbar{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--page) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1840px;margin:0 auto;padding:10px clamp(12px,2.25vw,44px);display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.eyebrow{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.topbar nav{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.topbar nav a{font-size:13px;color:var(--muted);text-decoration:none;padding:5px 9px;border-radius:6px;border:1px solid transparent}
+.topbar nav a:hover{color:var(--primary);border-color:var(--line);background:var(--panel)}
+.wrap{max-width:1840px;margin:0 auto;padding:0 clamp(12px,2.25vw,44px)}
+.hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:clamp(20px,4vw,60px);padding:clamp(28px,5vw,72px) 0 clamp(20px,3vw,40px);align-items:start}
+.hero h1{font-size:clamp(40px,6.4vw,92px);line-height:1.02;margin:.12em 0 .18em;letter-spacing:-.02em;font-family:var(--serif);font-weight:700}
+.hero .sub{font-size:clamp(16px,1.5vw,20px);color:var(--muted);max-width:34em;margin:0}
+.hero .claim{font-size:clamp(15px,1.3vw,17.5px);border-left:3px solid var(--accent);padding-left:16px;margin-top:22px;color:var(--ink)}
+.hero aside{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+.hero aside h3{margin:.1em 0 .6em;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.hero aside ul{margin:0;padding-left:1.1em}
+.hero aside li{margin:.45em 0;font-size:14.5px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.chip{font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:3px 11px;color:var(--muted);background:var(--shade)}
+section{padding:clamp(26px,4vw,52px) 0;border-top:1px solid var(--line)}
+.sec-head{display:flex;gap:16px;align-items:baseline;margin-bottom:6px}
+.sec-num{font-family:var(--serif);font-size:clamp(15px,1.6vw,19px);color:var(--accent);font-weight:700;letter-spacing:.06em}
+h2{font-size:clamp(24px,2.8vw,32px);line-height:1.3;margin:0;letter-spacing:-.01em;font-family:var(--serif)}
+.lead{font-size:clamp(16px,1.4vw,18px);color:var(--muted);max-width:56em;margin:.5em 0 1.3em}
+p{max-width:62em}
+.illus{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:clamp(14px,2vw,24px);margin:18px 0;overflow-x:auto}
+.illus figcaption,.cap{font-size:13.5px;color:var(--muted);margin-top:12px;line-height:1.7}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:13px;height:13px;border-radius:3px;display:inline-block}
+.diagram{min-width:0}
+.flow{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
+.node{flex:1 1 0;min-width:150px;border:1px solid var(--line);border-radius:var(--radius);padding:11px 13px;background:var(--surface);position:relative}
+.node b{display:block;font-size:14.5px;margin-bottom:2px}
+.node small{font-size:12.5px;color:var(--muted);display:block;line-height:1.55}
+.node .tagpos{position:absolute;top:-9px;left:10px;font-size:11px;background:var(--accent);color:#fff;border-radius:4px;padding:0 6px;letter-spacing:.04em}
+.node.inp{border-left:4px solid var(--blue)}
+.node.rep{border-left:4px solid var(--cyan)}
+.node.pol{border-left:4px solid var(--green)}
+.node.out{border-left:4px solid var(--purple)}
+.node.loss{border-left:4px solid var(--red)}
+.node.anchor{border-left:4px solid var(--gold)}
+.arrow{display:flex;justify-content:center;color:var(--muted);font-size:18px;line-height:1}
+.v-arrow{width:2px;height:16px;background:var(--line);margin:0 auto;position:relative}
+.v-arrow::after{content:"";position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid var(--line)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:720px){.split{grid-template-columns:1fr}}
+.var-card{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:var(--radius);margin:10px 0;background:var(--surface);overflow:hidden}
+.var-card .left{flex:0 0 42%;padding:12px 14px;border-right:1px solid var(--line);background:var(--panel);font-size:13.5px}
+.var-card .right{flex:1 1 0;padding:12px 15px;font-size:14.5px;min-width:220px}
+@media(max-width:640px){.var-card .left{flex:1 1 100%;border-right:none;border-bottom:1px solid var(--line)}}
+.var-name{font-weight:700;font-family:var(--serif);font-size:15.5px}
+.var-card code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+.var-card .route{color:var(--muted);font-size:12.5px;margin-top:4px}
+eq{display:block;font-family:var(--serif);font-size:clamp(15px,1.6vw,18px);background:var(--panel);border-left:3px solid var(--primary);padding:12px 16px;margin:14px 0;overflow-x:auto}
+.calc{background:var(--shade);border:1px dashed var(--line);border-radius:var(--radius);padding:13px 16px;font-size:14.5px;margin:12px 0}
+.calc code{font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.symtab{display:grid;grid-template-columns:120px 1fr;gap:6px 14px;font-size:14px;margin:12px 0}
+.symtab div:nth-child(odd){font-weight:700;font-family:var(--serif)}
+details{border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;margin:12px 0;background:var(--surface)}
+details summary{cursor:pointer;font-weight:600;font-size:14.5px;color:var(--primary)}
+details[open] summary{margin-bottom:8px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:12px 0}
+th,td{border-bottom:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.compare{display:grid;grid-template-columns:1fr;gap:10px}
+.path{border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;background:var(--surface)}
+.path.old{border-style:dashed}
+.path.new{border-color:var(--green)}
+.path h4{margin:0 0 6px;font-size:14px}
+.path .small{font-size:13px;color:var(--muted)}
+.step{display:inline-block;font-size:12px;padding:1px 7px;border-radius:4px;background:var(--accent);color:#fff;margin-right:6px}
+.timeline{position:relative;border:1px solid var(--line);border-radius:var(--radius);padding:16px 14px 10px;background:var(--surface);min-width:640px}
+.tl-scale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-bottom:10px}
+.tl-track{position:relative;height:26px;margin:8px 0;border-radius:4px;background:var(--shade)}
+.tl-bar{position:absolute;top:5px;height:16px;border-radius:3px;font-size:10.5px;color:#fff;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden}
+.tl-label{font-size:12px;color:var(--muted);margin-top:6px}
+.src{font-size:12.5px;color:var(--muted);margin-top:8px}
+.src a{color:var(--primary)}
+.pdfimg{width:100%;height:auto;border:1px solid var(--line);border-radius:8px;display:block;background:#fff}
+.pdfimg-wrap{max-width:860px}
+.callout{border-left:3px solid var(--gold);background:var(--panel);padding:10px 14px;border-radius:0 var(--radius) var(--radius) 0;font-size:14.5px;margin:14px 0}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+button{font-family:inherit;font-size:13.5px;padding:6px 13px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+button[aria-pressed="true"]{background:var(--primary);color:var(--surface);border-color:var(--primary)}
+.round{position:fixed;z-index:55;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;font-size:13px;line-height:1.2}
+#tocBtn{left:18px;bottom:18px;width:60px;height:60px;flex-direction:column}
+#themeBtn{right:18px;bottom:18px;width:52px;height:52px}
+#tocPanel{position:fixed;left:18px;bottom:90px;width:310px;max-height:66vh;overflow:auto;z-index:56;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);display:none}
+#tocPanel.open{display:block}
+#tocPanel a{display:block;font-size:13.5px;color:var(--ink);text-decoration:none;padding:7px 9px;border-radius:6px}
+#tocPanel a:hover,#tocPanel a.current{background:var(--panel);color:var(--primary)}
+#tocPanel .close{float:right;font-size:12px;color:var(--muted);cursor:pointer;border:none;background:none}
+.foot{padding:30px 0 90px;font-size:13.5px;color:var(--muted)}
+.foot a{color:var(--primary)}
+@media(max-width:720px){
+.hero{grid-template-columns:1fr}
+#tocBtn{width:56px;height:56px}
+#tocPanel{width:min(88vw,310px)}
+body{font-size:16px}
+}
+@media print{.round,#tocPanel,.topbar,.progress{display:none}details{display:block}details>summary{list-style:none}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<header class="topbar">
+  <div class="topbar-in">
+    <span class="eyebrow">机器人学习 · VLA + 在线强化学习</span>
+    <nav>
+      <a href="../index.html">← 总目录</a>
+      <a href="#pipeline">全貌</a>
+      <a href="#problem">问题</a>
+      <a href="#token">RL token</a>
+      <a href="#actor">演员与评论家</a>
+      <a href="#system">训练系统</a>
+      <a href="#evidence">证据</a>
+      <a href="#limits">边界</a>
+      <a href="assets/paper.pdf">原文 PDF</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="hero">
+  <div>
+    <div class="eyebrow">Physical Intelligence · 2025</div>
+    <h1>RL Token</h1>
+    <p class="sub">在冻结的视觉-语言-动作模型（VLA）内部训练一个紧凑表示，让小 actor-critic 在真实机器人上做数分钟级的在线强化学习。</p>
+    <div class="claim"><b>一句话主线：</b>预训练 VLA 提供感知与“初始动作建议”，RL token 把它的高维内部特征压缩成 RL 可用的状态；在线 RL 只在这个小表示上局部精修 VLA 的动作块，而不是从零学起。</div>
+    <div class="chips"><span class="chip">π0.6 基座</span><span class="chip">动作块 C=10</span><span class="chip">稀疏 +1 奖励</span><span class="chip">4 个精密任务</span><span class="chip">提速最高 ~3×</span></div>
+  </div>
+  <aside>
+    <h3>关键数字（原文口径）</h3>
+    <ul>
+      <li>螺钉安装关键阶段成功率 <b>20% → 65%</b>（摘要示例）。</li>
+      <li>整任务评估中，螺钉成功率提升到 <b>+40%</b>，扎带 <b>+60%</b>（相对提升）。</li>
+      <li>以太网任务上，RLT 的中位 episode 长度 <b>66</b> 步，优于遥操作示范中位 <b>146</b> 步（Fig. 9）。</li>
+      <li>以太网任务只消费约 <b>5 分钟</b>关键阶段数据后性能超过基线（Fig. 7 说明）。</li>
+    </ul>
+  </aside>
+</div>
+
+<section id="pipeline">
+  <div class="sec-head"><span class="sec-num">00</span><h2>全貌：从 VLA 内部特征到在线 RL 策略</h2></div>
+  <p class="lead">先沿箭头看一遍运行路径。橙色标号为后文展开的定位点，不是说训练按这个顺序“串行”。</p>
+  <figure class="illus">
+    <div class="legend">
+      <span><i class="sw" style="background:var(--blue)"></i>输入（图像 / 语言 / 本体状态）</span>
+      <span><i class="sw" style="background:var(--cyan)"></i>VLA 内部表示与 RL token</span>
+      <span><i class="sw" style="background:var(--green)"></i>在线 RL 的演员与评论家</span>
+      <span><i class="sw" style="background:var(--gold)"></i>VLA 参考动作（锚点）</span>
+      <span><i class="sw" style="background:var(--purple)"></i>实际执行的动作块</span>
+    </div>
+    <div class="flow diagram">
+      <div class="row">
+        <div class="node inp"><span class="tagpos">①</span><b>多路观测</b><small>腕部相机×2 + 基座相机；语言指令 ℓ；本体状态 s<sub>p</sub>（关节位置或末端位姿）</small></div>
+        <div class="node inp"><span class="tagpos">②</span><b>预训练 VLA（π0.6）</b><small>冻结的 VLM 主干 + action expert，输出动作块 ṽa<sub>1:H</sub>，H=50</small></div>
+      </div>
+      <div class="v-arrow"></div>
+      <div class="row">
+        <div class="node rep"><span class="tagpos">③</span><b>RL token 编码器-解码器</b><small>把最终层 token 嵌入 z<sub>1:M</sub> 压缩成 z<sub>rl</sub>；训练时用解码器重建 z<sub>i</sub> 作为瓶颈约束</small></div>
+        <div class="node rep"><span class="tagpos">④</span><b>RL 状态 x</b><small>x = (z<sub>rl</sub>, s<sub>p</sub>)：一个紧凑向量，交给小网络</small></div>
+      </div>
+      <div class="row">
+        <div class="node anchor"><span class="tagpos">⑤</span><b>参考动作块 ṽa<sub>1:C</sub></b><small>从 VLA 的 H 长动作块中取出与 RL 设长 C 对齐的部分</small></div>
+        <div class="node pol"><span class="tagpos">⑥</span><b>演员 π<sub>θ</sub></b><small>输入 (x, ṽa)：产出高斯动作块分布；训练时对 ṽa 做 50% dropout</small></div>
+        <div class="node pol"><span class="tagpos">⑦</span><b>评论家 Q<sub>ψ</sub></b><small>双 Q 集成，取最小值做 TD 目标；输入 (x, 动作块)</small></div>
+      </div>
+      <div class="v-arrow"></div>
+      <div class="row">
+        <div class="node out"><span class="tagpos">⑧</span><b>执行动作块 a<sub>1:C</sub>（C=10）</b><small>50 Hz 下覆盖 0.2 s；真实机器人观测、稀疏成功/失败标签</small></div>
+        <div class="node loss"><span class="tagpos">⑨</span><b>回放缓冲 B</b><small>聚合 VLA 预热数据、RL rollout、可选人工干预；每 2 步抽样一条转移</small></div>
+      </div>
+      <div class="v-arrow"></div>
+      <div class="row">
+        <div class="node loss"><b>离线更新</b><small>每批数据做 2 次评论家更新 / 1 次演员更新；每环境步对数据比 G=5</small></div>
+        <div class="node anchor"><b>BC 正则项</b><small>L<sub>π</sub> 含 β‖a−ṽa‖²，把在线搜索拉回 VLA 建议附近</small></div>
+      </div>
+    </div>
+    <figcaption>重绘示意，依据 Figure 1、Figure 2 与 Algorithm 1；模块数量与连线是教学简化，精确配置见原文附录 B。</figcaption>
+  </figure>
+  <p>整个系统分工明确：<b>冻结的 VLA</b>负责广泛感知和动作建议；<b>RL token</b>把它的内部知识压缩成小状态；<b>轻量 actor-critic</b>只负责在关键阶段把动作“往更成功的方向局部编辑”。</p>
+  <div class="src">来源：PDF 第 1 页 Figure 1；第 3–5 页 §III–§IV；第 5 页 Algorithm 1。</div>
+</section>
+
+<section id="problem">
+  <div class="sec-head"><span class="sec-num">01</span><h2>问题：精度任务卡在“最后一毫米”</h2></div>
+  <p class="lead">VLA 能“开箱即用”完成大量操作，但在需要毫米级对齐的阶段会变慢、反复试探，甚至失败。在线 RL 想补上这一段，但真实机器人每次试错都有时间与磨损成本。</p>
+  <div class="split">
+    <div class="path old"><h4>常规做法 A：全模型 RL</h4><div class="small">对十亿参数级 VLA 做在线更新，计算与样本都开销巨大，难以在数小时内完成（§I、§IV-A）。</div></div>
+    <div class="path old"><h4>常规做法 B：小模型从零 RL</h4><div class="small">SERL 类方法用小 actor-critic 从零训练、配标准 ResNet 视觉编码器，几小时能学会，但丢掉了 VLA 的泛化先验（§II）。</div></div>
+  </div>
+  <figure class="illus">
+    <div class="legend"><span><i class="sw" style="background:var(--red)"></i>失败/试探</span><span><i class="sw" style="background:var(--green)"></i>成功/流畅</span></div>
+    <div class="split">
+      <div class="path old">
+        <h4>基座 VLA 在以太网插入上的表现</h4>
+        <div class="small">接近端口 → 略微后退 → 重新调整 → 再试。原文描述为“probing”行为，可能反复多次才成功（§VI-C Q4）。</div>
+        <div style="margin-top:8px;font-family:var(--serif);font-size:13px;color:var(--red)">接近 → 退 → 调 → 再接近 …</div>
+      </div>
+      <div class="path new">
+        <h4>RLT 学到的策略</h4>
+        <div class="small">接近端口并流畅插入；首次失败时施加压力、轻微摆动以利用接触柔顺性，从在线探索中自发出现（§VI-C Q4）。</div>
+        <div style="margin-top:8px;font-family:var(--serif);font-size:13px;color:var(--green)">接近 → 压入 / 微摆 → 插入</div>
+      </div>
+    </div>
+    <figcaption>行为描述依据原文文字，不是逐帧测量图；动作为定性示意。</figcaption>
+  </figure>
+  <p>方法只在每个任务的<b>关键阶段</b>（插入、紧固或旋转段）做 RL，其余由基座 VLA 完成。关键阶段通常持续 5–20 s（50 Hz 下约 250–1000 控制步），整任务 30–120 s。</p>
+  <div class="src">来源：PDF 第 1 页摘要与 §I；第 7 页 §VI-A；第 9 页 §VI-C Q4。</div>
+</section>
+
+<section id="token">
+  <div class="sec-head"><span class="sec-num">02</span><h2>机制一：用编码器-解码器挤出 RL token</h2></div>
+  <p class="lead">RL 需要一个“够小、又保留任务相关信息”的状态。做法是在 VLA 最终层 token 序列末尾加一个可学习的 &lt;rl&gt; 嵌入，让编码器输出该位置的 z<sub>rl</sub>，再用解码器从 z<sub>rl</sub> 自回归重建原 token 嵌入，形成信息瓶颈。</p>
+
+  <figure class="illus">
+    <div class="legend">
+      <span><i class="sw" style="background:var(--blue)"></i>VLA 输入 token</span>
+      <span><i class="sw" style="background:var(--cyan)"></i>可学习 &lt;rl&gt; 嵌入</span>
+      <span><i class="sw" style="background:var(--gold)"></i>解码重建目标（stop-gradient）</span>
+    </div>
+    <div class="flow">
+      <div class="row">
+        <div class="node inp" style="flex:2 1 0"><b>最终层 token 嵌入 z<sub>1:M</sub></b><small>图中每个彩色小块表示一个 token 的嵌入；数量 M 随输入变化，非精确规格</small></div>
+        <div class="node rep"><b>追加 e<sub>rl</sub> = e<sub>ϕ</sub>(&lt;rl&gt;)</b><small>一个新的可学习嵌入</small></div>
+      </div>
+      <div class="v-arrow"></div>
+      <div class="row">
+        <div class="node rep" style="flex:1 1 0"><b>编码器 g<sub>ϕ</sub></b><small>轻量 transformer，读出位置 M+1 的输出</small></div>
+        <div class="node rep" style="flex:.6 1 0"><b>z<sub>rl</sub></b><small>1×2048 的紧凑向量（Fig. 2 标注）</small></div>
+      </div>
+      <div class="v-arrow"></div>
+      <div class="row">
+        <div class="node anchor"><b>解码器 d<sub>ϕ</sub> + 线性投影 h<sub>ϕ</sub></b><small>以 [z<sub>rl</sub>, z̄<sub>1:i−1</sub>] 为条件，自回归预测 z̄<sub>i</sub></small></div>
+        <div class="node loss"><b>L<sub>ro</sub>：均方重建误差</b><small>对示范数据 D 求期望（Eq. 2）</small></div>
+      </div>
+    </div>
+    <figcaption>重绘示意，依据 Figure 2 与 §IV-A；图中 token 小块数是示意，不是精确 M 值。</figcaption>
+  </figure>
+
+  <eq>z<sub>rl</sub> = g<sub>ϕ</sub>([z<sub>1:M</sub>, e<sub>rl</sub>])<sub>M+1</sub> &nbsp;&nbsp;&nbsp; (1)</eq>
+  <eq>L<sub>ro</sub>(ϕ) = E<sub>D</sub>[ Σ<sub>i=1..M</sub> ‖ h<sub>ϕ</sub>( d<sub>ϕ</sub>([z<sub>rl</sub>, z̄<sub>1:i−1</sub>]) )<sub>i</sub> − z̄<sub>i</sub> ‖² ] &nbsp;&nbsp;&nbsp; (2)</eq>
+
+  <div class="callout"><b>白话：</b>z<sub>rl</sub> 是“压缩中间人”。它必须窄到够小，又必须大到让解码器能把 VLA 的 token 嵌入恢复出来。训练时 VLA 对 L<sub>ro</sub> 冻结（θ<sub>vla</sub> 不因重建损失更新，可选地加一个 αL<sub>vla</sub> 项做监督微调）；训练完成后 VLA 与 token 模块一起冻结。</div>
+
+  <h3 style="font-size:18px;margin-top:26px">变量追踪</h3>
+  <div class="var-card"><div class="left"><div class="var-name">z<sub>1:M</sub></div><div class="route">VLA 最终层 → 编码器输入 → 解码重建目标</div></div><div class="right"><b>是什么：</b>预训练 VLA 对状态 s 与指令 ℓ 产生的最终层 token 嵌入，按 token 切成 M 个。原文强调“each transformer layer 的嵌入都是高维”，选哪层特征并不显然，这里用最终层。<br><b>补充：</b>实验里每任务语言指令固定，因此这一步省略语言嵌入（脚注 1）；一般构造仍适用于全部 VLA 嵌入。</div></div>
+  <div class="var-card"><div class="left"><div class="var-name">e<sub>rl</sub> = e<sub>ϕ</sub>(&lt;rl&gt;)</div><div class="route">可学习参数 → 拼到序列末尾</div></div><div class="right"><b>是什么：</b>一个随 ϕ 一起训练的嵌入，占据序列第 M+1 个位置，让编码器在这个位置聚合整个序列再读出。</div></div>
+  <div class="var-card"><div class="left"><div class="var-name">z<sub>rl</sub></div><div class="route">编码器读出位置 M+1 → 在线 RL 的输入状态一部分</div></div><div class="right"><b>是什么：</b>1×2048 的向量（Fig. 2 标注），原始分辨率 token 是 N×2048。它同时是解码器自回归的起点，也是后面演员/评论家看到的“VLA 知识”载体。<br><b>下游：</b>与本体状态 s<sub>p</sub> 拼成 x。</div></div>
+  <div class="var-card"><div class="left"><div class="var-name">z̄<sub>i</sub> = sg(z<sub>i</sub>)</div><div class="route">VLA 嵌入 → stop-gradient → 解码目标</div></div><div class="right"><b>是什么：</b>重建目标。stop-gradient 意味着重建损失不会反向去改 VLA 的嵌入（θ<sub>vla</sub> 只在可选的 VLA 微调项里更新）。</div></div>
+
+  <details>
+    <summary>展开：用一个小数值例子理解重建损失</summary>
+    <p>假设只有 2 个目标嵌入，一维简化表示：z̄<sub>1</sub>=2，z̄<sub>2</sub>=−1。</p>
+    <div class="calc">解码器第 1 步以 z<sub>rl</sub> 为条件，输出预测 ẑ<sub>1</sub>=1.5；第 2 步以 [z<sub>rl</sub>, z̄<sub>1</sub>=2] 为条件输出 ẑ<sub>2</sub>=−0.2。<br>
+    误差项：(1.5−2)² = 0.25；(−0.2−(−1))² = 0.64。<br>
+    L<sub>ro</sub> = 0.25 + 0.64 = 0.89。每个样本对 M 项求和后取期望；梯度只回传到编码器/解码器参数 ϕ。</div>
+    <p>这个例子说明：<b>z<sub>rl</sub> 必须携带足够信息</b>，否则无论解码器多强，第一步预测就会偏；解码器越强、z<sub>rl</sub> 越窄，瓶颈就压得越紧。这是一维教学简化，实际 token 是 2048 维向量。</p>
+  </details>
+
+  <p>训练 token 时用少量单任务示范数据：原文附录 B 说先收集任务示范数据，然后对基座 VLA 微调并训练 RL token，共 <b>2000–10000 梯度步</b>；随后 VLA 冻结。</p>
+  <div class="src">来源：PDF 第 4 页 §IV-A、Eq. (1)(2)、Figure 2；第 12 页附录 B。</div>
+</section>
+
+<section id="actor">
+  <div class="sec-head"><span class="sec-num">03</span><h2>机制二：演员在 VLA 建议附近做局部编辑</h2></div>
+  <p class="lead">与“输出残差”或“在噪声空间操控扩散”的方法不同，RLT 的演员直接以 VLA 采样出的动作块为条件，并在目标函数里显式拉回它。在线 RL 因此变成对好先验的局部修正。</p>
+
+  <div class="compare">
+    <div class="path old"><h4>对照方法（原文 §II 描述）</h4><div class="small"><b>单步残差类</b>（PLD、Policy Decorator、ConRFT 等）：在冻住 VLA 上输出单步残差或一致性目标，horizon 很长。<br><b>DSRL / GR-RL 类</b>：在扩散噪声空间学策略，用潜变量“转向”去噪过程，探索被隐式限制在 VLA 能生成的模态内。</div></div>
+    <div class="path new"><h4>RLT 的路径</h4><div class="small"><span class="step">改</span>演员直接输出 C=10 的动作块；<span class="step">增</span>输入包含 VLA 参考动作块 ṽa；<span class="step">增</span>损失里加 β 范数正则；<span class="step">增</span>训练时随机把 ṽa 置零（50%）防止照抄。评论家在整个动作块上做 TD，缩短稀疏奖励下的信用分配。</div></div>
+  </div>
+
+  <p>两个网络的输入和目标是：</p>
+  <eq>π<sub>θ</sub>(a<sub>1:C</sub> | x, ṽa<sub>1:C</sub>) = N( μ<sub>θ</sub>(x, ṽa<sub>1:C</sub>), σ²I ) &nbsp;&nbsp;&nbsp; (4)</eq>
+  <eq>L<sub>Q</sub>(ψ) = E<sub>B</sub>[ ( Q̂ − Q<sub>ψ</sub>(x, a<sub>1:C</sub>) )² ]，Q̂ = Σ<sub>t′=1..C</sub> γ<sup>t′−1</sup>r<sub>t′</sub> + γ<sup>C</sup>E<sub>a′∼π<sub>θ</sub></sub>[ Q<sub>ψ′</sub>(x′, a′) ] &nbsp;&nbsp;&nbsp; (3)</eq>
+  <eq>L<sub>π</sub>(θ) = E[ − Q<sub>ψ</sub>(x, a<sub>1:C</sub>) + β ‖a<sub>1:C</sub> − ṽa<sub>1:C</sub>‖²<sub>2</sub> ]，&nbsp; ṽa<sub>1:C</sub> ∼ π<sub>vla</sub>(·|s, ℓ) &nbsp;&nbsp;&nbsp; (5)</eq>
+
+  <div class="symtab">
+    <div>x</div><div>RL 状态：x = (z<sub>rl</sub>, s<sub>p</sub>)，含 RL token 与本体状态</div>
+    <div>a<sub>1:C</sub></div><div>RL 动作块，C=10 步，每步 14 维动作，共 140 维向量</div>
+    <div>ṽa<sub>1:C</sub></div><div>VLA 采样的参考动作块（RL 设长 C 的部分）</div>
+    <div>ψ, ψ′</div><div>评论家参数与目标网络参数；双 Q 集成取最小值</div>
+    <div>β</div><div>BC 正则强度；消融时设 β=0</div>
+    <div>γ</div><div>折扣因子</div>
+  </div>
+
+  <details>
+    <summary>展开：一个动作块的 TD 目标怎么算（数值演示）</summary>
+    <p>为便于手算，假设 C=2、γ=0.9，两个子步奖励都是 0，终止前没有成功，最后下一状态的 Q<sub>ψ′</sub> 期望值估为 3。</p>
+    <div class="calc">Q̂ = γ<sup>0</sup>r<sub>1</sub> + γ<sup>1</sup>r<sub>2</sub> + γ<sup>2</sup>·E[Q<sub>ψ′</sub>(x′,a′)]<br>
+    = 0 + 0 + 0.81 × 3 = <b>2.43</b><br>
+    若当前评论家对这段动作块估计 Q<sub>ψ</sub>=1.9，则 TD 误差 = 2.43 − 1.9 = 0.53，平方后 0.28 作为该样本损失。</div>
+    <p>这个演示把 C 缩到 2、忽略奖励项，只展示“块级 TD”里折扣与 bootstrapping 的组合方式；论文实际 C=10、奖励是末端稀疏 +1，未报告中间奖励。</p>
+  </details>
+
+  <div class="callout"><b>为什么正则项消融影响最大？</b>原文 Q3 汇报：去掉 BC 正则（β=0）是单项最大跌幅，因为演员只剩 Q 函数梯度，要在整个高维动作块空间里搜索。参考动作 dropout 则是另一层保险：防止演员过早只会照抄 ṽa。</div>
+
+  <div class="src">来源：PDF 第 3–5 页 §IV-B、Eq. (3)(4)(5)；第 9 页 §VI-C Q3；第 12 页附录 B。</div>
+</section>
+
+<section id="system">
+  <div class="sec-head"><span class="sec-num">04</span><h2>训练系统：预热、异步 rollout 与稀疏标签</h2></div>
+  <p class="lead">RLT 不重画整段轨迹：它只在被指定的关键阶段收集转移、做离线更新。下面是一个可读的训练时序，刻度是物理秒，但具体时长依任务而变。</p>
+
+  <figure class="illus">
+    <div class="legend">
+      <span><i class="sw" style="background:var(--gold)"></i>基座 VLA 控制</span>
+      <span><i class="sw" style="background:var(--green)"></i>RL 演员控制（关键阶段）</span>
+      <span><i class="sw" style="background:var(--violet)"></i>人工干预覆盖</span>
+      <span><i class="sw" style="background:var(--muted)"></i>更新/复位开销</span>
+    </div>
+    <div class="timeline">
+      <div class="tl-scale"><span>0 s</span><span>5 s</span><span>10 s</span><span>15 s</span><span>20 s</span><span>25 s</span><span>30 s</span></div>
+      <div class="tl-track"><div class="tl-bar" style="left:0%;width:34%;background:var(--gold)">基座 VLA 执行非关键阶段（示意时长）</div></div>
+      <div class="tl-track"><div class="tl-bar" style="left:34%;width:34%;background:var(--green)">RL 策略执行关键阶段</div><div class="tl-bar" style="left:42%;width:12%;background:var(--violet)">人工干预</div></div>
+      <div class="tl-track"><div class="tl-bar" style="left:68%;width:14%;background:var(--muted)">复位 / 更新</div></div>
+      <div class="tl-label">单个 episode 的教学时间线：控制频率 50 Hz；关键阶段在原文中约 5–20 s。图中时长与切换点仅示意，实际由操作员选择交接时刻。</div>
+    </div>
+    <figcaption>何时从基座切到 RL 由人工选择；原文提供“把交接时刻作为标签微调 VLA”的方法，使测试时可自动触发（§V）。</figcaption>
+  </figure>
+
+  <h3 style="font-size:18px;margin-top:24px">数据与优化（原文披露项）</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>问题</th><th>原文信息</th><th>状态</th></tr></thead>
+    <tbody>
+      <tr><td>示范数据规模</td><td>每任务 1–10 小时遥操作示范</td><td>原文事实（§VI-B）</td></tr>
+      <tr><td>VLA/token 训练步数</td><td>2000–10000 梯度步（单任务数据）</td><td>原文事实（附录 B）</td></tr>
+      <tr><td>在线 RL 回合数</td><td>400–1000 episodes，依任务难度</td><td>原文事实（§VI-B）</td></tr>
+      <tr><td>实际机器人数据</td><td>每次实验约 15 分钟到 5 小时</td><td>原文事实（§VI-B）</td></tr>
+      <tr><td>动作块长度</td><td>VLA H=50（1 s @50 Hz）；RL C=10（0.2 s）</td><td>原文事实（§III、附录 B）</td></tr>
+      <tr><td>回放抽样</td><td>每 2 个控制步存一转移；1 秒数据约 25 个 RL 样本</td><td>原文事实（附录 B）</td></tr>
+      <tr><td>网络结构</td><td>actor/critic：2 层 MLP（隐维 256）；螺钉任务 3 层 MLP（隐维 512）</td><td>原文事实（附录 B）</td></tr>
+      <tr><td>更新比</td><td>每批数据 G=5；每次演员更新配 2 次评论家更新</td><td>原文事实（§V）</td></tr>
+      <tr><td>奖励</td><td>稀疏 +1，操作员判定 RL 任务成功；T 时刻 r<sub>T</sub>=1 否则 0</td><td>原文事实（§III、附录 B）</td></tr>
+      <tr><td>GPU 型号与训练时长</td><td>正文未给出具体算力数字</td><td>未报告</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout"><b>注意时间单位：</b>“训练 5 分钟”在 Fig. 7 指消耗的临界阶段数据量，而实验总时间约 40 分钟；不要把数据分钟数与墙钟训练时间混为一谈。</div>
+
+  <div class="src">来源：PDF 第 3 页 §III；第 5–6 页 §V、Algorithm 1；第 7 页 §VI-B；第 12 页附录 B。</div>
+</section>
+
+<section id="evidence">
+  <div class="sec-head"><span class="sec-num">05</span><h2>证据：成功率、吞吐与超出示范的速度</h2></div>
+  <p class="lead">原文在“关键阶段受控评测”（每任务 50 episodes）与“整任务评测”（螺钉、扎带）两套设定下比较。下面只列文字中明确给出的口径。</p>
+
+  <div class="split">
+    <div class="path new"><h4>Q1 相对基座 VLA</h4><div class="small">四任务关键阶段均提升；以太网与充电器约 <b>3×</b> 更快；螺钉关键阶段成功率 <b>20% → 65%</b>；整任务成功率螺钉 <b>+40%</b>、扎带 <b>+60%</b>（相对提升）。</div></div>
+    <div class="path new"><h4>Q2 对比其它 RL 方法</h4><div class="small">以太网任务上，单步方法 HIL-SERL 与 PLD 无法有效学习；DAgger 与 DSRL 成功率接近 RLT，但提速明显更少；RLT 把完成所需平均步数相对基座 <b>减半</b>。</div></div>
+  </div>
+
+  <figure class="illus" style="max-width:100%">
+    <div class="btnrow" role="group" aria-label="方法对比切换">
+      <button data-cond="base" aria-pressed="true">基座 VLA</button>
+      <button data-cond="rlt" aria-pressed="false">RLT</button>
+    </div>
+    <div id="barBox" aria-live="polite" style="min-width:560px">
+      <div style="font-size:13.5px;color:var(--muted);margin-bottom:8px" id="barTitle">以太网任务：中位 episode 长度（越短越快）</div>
+      <div class="row">
+        <div style="flex:1 1 0"><div style="font-size:12.5px;color:var(--muted)">遥操作示范</div><div style="height:22px;background:var(--shade);border-radius:4px;overflow:hidden;margin:4px 0"><div style="height:100%;width:41.7%;background:var(--blue)"></div></div><div style="font-size:13px">中位 146 步</div></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div style="flex:1 1 0"><div style="font-size:12.5px;color:var(--muted)" id="bar2label">基座 VLA</div><div style="height:22px;background:var(--shade);border-radius:4px;overflow:hidden;margin:4px 0"><div id="bar2" style="height:100%;width:65.1%;background:var(--purple)"></div></div><div style="font-size:13px" id="bar2val">中位 228 步</div></div>
+      </div>
+    </div>
+    <figcaption>数据来自 Fig. 9 文字标注（Teleop 中位 146、Base 中位 228、RLT 中位 66，以太网关键阶段）。柱长按中位步数线性缩放至 228→100%；切换按钮只改变第二条柱，用于直观比较基座与 RLT。</figcaption>
+  </figure>
+
+  <h3 style="font-size:18px;margin-top:24px">消融（以太网任务，Fig. 7–8）</h3>
+  <ul>
+    <li><b>去掉 RL token</b>（换冻结 ImageNet ResNet-10）：吞吐下降约 <b>50%</b>，说明 token 编码了通用视觉编码器没有的操作结构。</li>
+    <li><b>去掉分块</b>（C=1）：有效 horizon 拉长、信用分配变难，实际上无法可靠追平基座策略。</li>
+    <li><b>去掉 BC 正则</b>（β=0）：单项最大跌幅。</li>
+    <li><b>去掉参考动作透传</b>：学习更慢、早期探索漂移，偶有退化的行为；在该任务最终可追平，但训练过程中失败更多。</li>
+  </ul>
+  <p>另有定性结论：以太网任务上，RLT 策略的中位长度 66 步，<b>快于全部遥操作示范</b>（中位 146 步）；原文称一半 RL 回合比所有示范都快。</p>
+
+  <figure class="illus">
+    <div class="pdfimg-wrap">
+      <img class="pdfimg" src="assets/pdf-page-11.png" alt="PDF 第 11 页：参考文献与附录（含附录 A 贡献说明）" loading="lazy">
+    </div>
+    <figcaption>原 PDF 第 11 页，用于核对附录与引用；原图依据为 PDF 第 1 页 Figure 1、第 4 页 Figure 2。</figcaption>
+  </figure>
+
+  <div class="src">来源：PDF 第 1 页摘要；第 6–9 页 §VI-B–§VI-C、Figs. 4–9；第 12 页附录 B。</div>
+</section>
+
+<section id="limits">
+  <div class="sec-head"><span class="sec-num">06</span><h2>边界与回读</h2></div>
+  <p class="lead">这些限制与未报告项和正结果同样重要，阅读时不要拿常识补全。</p>
+  <ul>
+    <li><b>依赖人工：</b>训练需要人提供奖励、干预纠正，以及决定何时从基座切到 RL；原文把自动化（奖励模型、进度预测）列为未来方向。</li>
+    <li><b>评测范围：</b>关键阶段受控评测每任务 50 episodes；整任务评测只覆盖螺钉与扎带两个较难任务。充电器与以太网没有整任务数字。</li>
+    <li><b>未报告：</b>GPU 型号/数量、墙钟训练时长、单次推理耗时、β 的具体取值、σ 的具体数值，正文均未给出。</li>
+    <li><b>依赖基座：</b>方法假定预训练 VLA 已经“足够好”，RL 只做局部精修；若 VLA 提议系统性错误，正则项也可能限制改进。</li>
+    <li><b>原文页码：</b>本导读使用 PDF 页序（1–13），与部分印刷版页码可能不同。</li>
+  </ul>
+  <div class="src">来源：PDF 第 9 页 §VII；第 6–7 页 §VI-A–§VI-B；第 12 页附录 B。</div>
+</section>
+
+<div class="foot">
+  <p>本页是非官方中文导读，依据 Charles Xu、Jost Tobias Springenberg、Michael Equi、Ali Amin、Adnan Esmail、Sergey Levine、Liyiming Ke 的论文《RL Token: Bootstrapping Online RL with Vision-Language-Action Models》（Physical Intelligence, 2025）制作。所有原图版权归原作者；示意图为教学重绘。</p>
+  <p><a href="../index.html">← 返回文献总目录</a> · <a href="assets/paper.pdf">打开原文 PDF</a> · <a href="SOURCES.md">来源记录</a></p>
+</div>
+</div>
+
+<button class="round" id="tocBtn" aria-label="打开目录" aria-expanded="false">目录</button>
+<div id="tocPanel" role="dialog" aria-modal="false" aria-label="章节导航">
+  <button class="close" id="tocClose" aria-label="关闭目录">关闭 ×</button>
+  <a href="#pipeline">00 全貌</a>
+  <a href="#problem">01 问题</a>
+  <a href="#token">02 RL token</a>
+  <a href="#actor">03 演员与评论家</a>
+  <a href="#system">04 训练系统</a>
+  <a href="#evidence">05 证据</a>
+  <a href="#limits">06 边界</a>
+</div>
+<button class="round" id="themeBtn" aria-label="切换日夜主题">☾</button>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  var themeBtn=document.getElementById('themeBtn');
+  function applyTheme(t){root.setAttribute('data-theme',t);themeBtn.textContent=t==='night'?'☀':'☾';}
+  var saved=null;try{saved=localStorage.getItem('rlt-theme');}catch(e){}
+  applyTheme(saved==='night'?'night':'day');
+  themeBtn.addEventListener('click',function(){var t=root.getAttribute('data-theme')==='night'?'day':'night';applyTheme(t);try{localStorage.setItem('rlt-theme',t);}catch(e){}});
+
+  var btn=document.getElementById('tocBtn'),panel=document.getElementById('tocPanel'),close=document.getElementById('tocClose');
+  function openToc(){panel.classList.add('open');btn.setAttribute('aria-expanded','true');}
+  function closeToc(){panel.classList.remove('open');btn.setAttribute('aria-expanded','false');}
+  btn.addEventListener('click',function(){panel.classList.contains('open')?closeToc():openToc();});
+  close.addEventListener('click',closeToc);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeToc();});
+  document.addEventListener('click',function(e){if(!panel.contains(e.target)&&e.target!==btn&&!btn.contains(e.target))closeToc();});
+  panel.querySelectorAll('a').forEach(function(a){a.addEventListener('click',closeToc);});
+
+  var progress=document.getElementById('progress');
+  var secs=[].slice.call(document.querySelectorAll('section[id]'));
+  var tocLinks=[].slice.call(panel.querySelectorAll('a'));
+  function onScroll(){
+    var h=document.documentElement;
+    var max=h.scrollHeight-h.clientHeight;
+    progress.style.width=(max>0?(h.scrollTop/max*100):0)+'%';
+    var cur=null;
+    secs.forEach(function(s){if(s.getBoundingClientRect().top<window.innerHeight*0.35)cur=s.id;});
+    tocLinks.forEach(function(a){a.classList.toggle('current',a.getAttribute('href')==='#'+cur);});
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+
+  var b1=document.querySelector('[data-cond="base"]'),b2=document.querySelector('[data-cond="rlt"]');
+  var bar2=document.getElementById('bar2'),bar2label=document.getElementById('bar2label'),bar2val=document.getElementById('bar2val');
+  function setCond(c){
+    var isBase=c==='base';
+    b1.setAttribute('aria-pressed',isBase?'true':'false');
+    b2.setAttribute('aria-pressed',isBase?'false':'true');
+    if(isBase){bar2.style.width='100%';bar2.style.background='var(--purple)';bar2label.textContent='基座 VLA';bar2val.textContent='中位 228 步';}
+    else{bar2.style.width=(66/228*100)+'%';bar2.style.background='var(--green)';bar2label.textContent='RLT（本方法）';bar2val.textContent='中位 66 步';}
+  }
+  b1.addEventListener('click',function(){setCond('base');});
+  b2.addEventListener('click',function(){setCond('rlt');});
+  setCond('base');
+})();
+</script>
+<script src="../reader/reader-ai.js" defer></script>
+<script src="../reader/reader-service.js" defer></script>
+</body>
+</html>
