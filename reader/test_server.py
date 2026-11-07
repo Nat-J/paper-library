@@ -260,8 +260,7 @@ class ReaderTests(unittest.TestCase):
             return result
         origin=f'http://127.0.0.1:{self.port}'
         try:
-            with patch.object(paper_import,'find_codex',return_value='/bin/false'), \
-                    patch.object(paper_import.ImportManager,'start_worker',keep_worker_lock):
+            with patch.object(paper_import.ImportManager,'start_worker',keep_worker_lock):
                 self.assertEqual(upload('https://example.com')[0],403)
                 self.assertEqual(upload(origin,content_type='text/plain')[0],415)
                 self.assertEqual(upload(origin,data=b'bad!!')[0],400)

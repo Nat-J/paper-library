@@ -26,13 +26,10 @@ class ImportTests(unittest.TestCase):
         shutil.copyfile(Path(__file__).parents[1] / 'skills/paper-to-web/scripts/check_guide.py',skill / 'check_guide.py')
         (self.root / 'index.html').write_text('<html><span id="paper-count">00 篇</span>' + importer.CATALOG_MARKER + '</html>')
         (self.root / '.gitignore').write_text('config.json\n.reader-data/\n')
-        (self.root / 'config.json').write_text('PRIVATE-CREDENTIAL-FIXTURE')
+        (self.root / 'config.json').write_text(json.dumps({'base_url':'https://example.com','api_key':'PRIVATE-CREDENTIAL-FIXTURE','model':'fixture-model'}))
         self.manager = importer.ImportManager(self.root)
-        self.codex = patch.object(importer,'find_codex',return_value='/bin/false')
-        self.codex.start()
 
     def tearDown(self):
-        self.codex.stop()
         self.temp.cleanup()
 
     def upload(self):
@@ -100,6 +97,27 @@ class ImportTests(unittest.TestCase):
         with self.assertRaisesRegex(importer.ImportErrorMessage,'PDF 无法解析'):
             importer.generate(self.manager,job)
         self.assertFalse((self.manager.directory / job['id'] / 'generation.log').exists())
+
+    def test_generation_calls_configured_provider_and_model(self):
+        job = self.upload()
+        output_json = {**METADATA,
+            'index_html':'<!doctype html><html lang="zh-CN"><head><meta name="viewport" content="width=device-width"><title>中文</title></head><body><h1>中文导读</h1><svg aria-label="示意"></svg><script src="../reader/reader-ai.js"></script><script src="../reader/reader-service.js"></script></body></html>',
+            'sources_md':'PDF 第 1 页：测试来源。'}
+        class Response:
+            def __enter__(self): return self
+            def __exit__(self,*args): return False
+            def read(self,limit): return json.dumps({'choices':[{'message':{'content':json.dumps(output_json,ensure_ascii=False)}}]}).encode()
+        with patch.object(importer,'extract_pdf_pages',return_value=(['fixture text'],'fixture text')), \
+                patch.object(importer,'render_pdf_pages',return_value=[]), \
+                patch.object(importer,'urlopen',return_value=Response()) as upstream:
+            output, metadata = importer.generate(self.manager,job)
+        request = upstream.call_args.args[0]
+        payload = json.loads(request.data)
+        self.assertEqual(request.full_url,'https://example.com/chat/completions')
+        self.assertEqual(request.get_header('Authorization'),'Bearer PRIVATE-CREDENTIAL-FIXTURE')
+        self.assertEqual(payload['model'],'fixture-model')
+        self.assertEqual(metadata['title_zh'],'中文测试论文')
+        self.assertTrue((output/'index.html').is_file())
 
     def test_catalog_escapes_metadata_and_preserves_existing_entries(self):
         original = '<span id="paper-count">01 篇</span><article class="paper" id="old">keep</article><script src="reader/reader-service.js"></script>' + importer.CATALOG_MARKER

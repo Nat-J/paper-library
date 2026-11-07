@@ -14,7 +14,7 @@
     <dialog id="reader-import-panel" aria-labelledby="reader-import-heading">
       <header><h2 id="reader-import-heading">导入 PDF，生成中文导读</h2><button class="rimp-close" type="button" aria-label="关闭导入面板">×</button></header>
       <div class="rimp-body"><div class="rimp-drop"><p><strong>把 PDF 拖到这里，或拖入阅读页面</strong><br>按 paper-to-web skill 生成，归档后更新文献目录</p><button class="rimp-choose" type="button">选择 PDF</button><p class="rimp-meta">每次一篇 · 最大 50 MB</p></div>
-      <p class="rimp-note">生成由本机已登录的 Codex 执行，使用其账户额度；DeepSeek 用于阅读问答。完成后会将原 PDF、导读和媒体同步到当前 GitHub 仓库（public）。</p>
+      <p class="rimp-note">导入和页面问答都使用 config.json 里的 API key 与 model。切换 model 后下一次导入就使用新模型；完成后会将原 PDF、导读和媒体同步到当前 GitHub 仓库（public）。</p>
       <p class="rimp-note">生成可能需要数分钟。关闭此面板后任务继续，电脑需保持开机和联网。</p>
       <p class="rimp-status" role="status" aria-live="polite"></p><div class="rimp-jobs" aria-label="导入记录"></div></div>
     </dialog>`;
@@ -107,7 +107,7 @@
       choose.disabled=!available || busy || uploading;
       if(!available) message(data.reason,true);
       else if(busy && !uploading) message('论文正在后台处理，完成后会显示打开导读的入口。');
-      else if(!uploading && status.dataset.error!=='true') message('拖入 PDF 即开始生成并自动归档、同步。');
+      else if(!uploading && status.dataset.error!=='true') message(`拖入 PDF 即开始生成并自动归档、同步 · ${data.provider || ''} / ${data.model || ''}`);
       renderJobs(data.jobs);
       clearTimeout(polling);
       if(busy || panel.open) polling=setTimeout(loadJobs,2000);
